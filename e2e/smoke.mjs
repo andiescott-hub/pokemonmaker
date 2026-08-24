@@ -62,6 +62,18 @@ try {
   if ((await page.locator('[data-testid="stroke"]').count()) < 1) fail('sketch stroke was not created')
   console.log('✓ sketch: stroke drawn')
 
+  // Touch drags on the canvas must not scroll the page (iOS Safari ignores
+  // CSS touch-action on SVG, so a non-passive JS guard preventDefaults
+  // touch events — assert it is attached and active).
+  const touchBlocked = await page.evaluate(() => {
+    const svg = document.querySelector('[data-testid="creature-canvas"]')
+    const event = new TouchEvent('touchmove', { cancelable: true, bubbles: true })
+    svg.dispatchEvent(event)
+    return event.defaultPrevented
+  })
+  if (!touchBlocked) fail('canvas touchmove is not preventDefaulted — sketching would scroll on iPad')
+  console.log('✓ sketch: canvas touch events are blocked from scrolling the page')
+
   // 2. Hold-to-undo: hold on the stroke, it disappears; hold again, it returns.
   const edgeX = cx - 120 // a point on the drawn ellipse (angle 0)
   await page.mouse.move(edgeX, cy)

@@ -41,11 +41,17 @@ export function CreateScreen() {
       }
       setDrag(null)
     }
+    // While dragging, block native touch scrolling too — iOS Safari would
+    // otherwise pan the page instead of moving the ghost (CSS touch-action
+    // alone is not reliable there).
+    const blockTouch = (e: TouchEvent) => e.preventDefault()
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp, { once: true })
+    document.addEventListener('touchmove', blockTouch, { passive: false })
     return () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
+      document.removeEventListener('touchmove', blockTouch)
     }
   }, [drag?.obj, placeObject]) // eslint-disable-line react-hooks/exhaustive-deps
 

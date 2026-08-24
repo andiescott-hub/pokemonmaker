@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useAppStore } from '../store'
 import { CANVAS_W, CANVAS_H, STROKE_WIDTH, renderFillLayer, strokePath } from '../utils/render'
 import { objectById } from '../data/objects'
@@ -62,6 +62,23 @@ export function CreatureCanvas({ svgRef, paintColor }: CreatureCanvasProps) {
   const holdHandled = useRef(false)
   const downPoint = useRef<Point | null>(null)
   const draggingObject = useRef<string | null>(null)
+
+  // iOS Safari ignores CSS `touch-action: none` on SVG, so touch drags on
+  // the canvas pan the page instead of drawing. Blocking the native touch
+  // events with non-passive listeners is the reliable fix (React's
+  // synthetic handlers are passive and can't preventDefault here). Pointer
+  // events still drive the drawing logic.
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+    const block = (e: TouchEvent) => e.preventDefault()
+    svg.addEventListener('touchstart', block, { passive: false })
+    svg.addEventListener('touchmove', block, { passive: false })
+    return () => {
+      svg.removeEventListener('touchstart', block)
+      svg.removeEventListener('touchmove', block)
+    }
+  }, [svgRef])
 
   const fillLayerUrl = useMemo(() => {
     if (draft.fills.length === 0) return null

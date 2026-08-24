@@ -22,10 +22,21 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Lock the document completely — the app manages its own scroll areas.
+   position: fixed is the one pattern iOS Safari respects for killing
+   rubber-band page panning, which otherwise wins over canvas drawing. */
 html,
-body,
+body {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
 #root {
   height: 100%;
+  height: 100dvh; /* track Safari's dynamic toolbars */
 }
 
 body {
@@ -36,6 +47,7 @@ body {
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none; /* keep long-press (hold-to-undo) from opening the iOS callout */
 }
 
 button {
@@ -504,6 +516,8 @@ button {
   align-items: center;
   gap: 22px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ball-grid {
@@ -582,6 +596,8 @@ button {
   width: min(860px, 94vw);
   max-height: 88vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 24px 28px;
   display: flex;
   flex-direction: column;
