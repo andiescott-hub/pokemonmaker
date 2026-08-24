@@ -21,10 +21,26 @@ interface DragState {
 export function CreateScreen() {
   const mode = useAppStore((s) => s.mode)
   const placeObject = useAppStore((s) => s.placeObject)
+  const startNewCreature = useAppStore((s) => s.startNewCreature)
   const [paintColor, setPaintColor] = useState(PAINT_COLORS[0])
   const [libraryOpen, setLibraryOpen] = useState(false)
   const [drag, setDrag] = useState<DragState | null>(null)
+  const [eraser, setEraser] = useState(false)
+  const [confirmClear, setConfirmClear] = useState(false)
   const svgRef = useRef<SVGSVGElement | null>(null)
+
+  // Wiping the whole canvas takes two taps — one stray tap shouldn't
+  // destroy a drawing a kid just spent ten minutes on.
+  const clearAll = () => {
+    if (!confirmClear) {
+      setConfirmClear(true)
+      window.setTimeout(() => setConfirmClear(false), 3000)
+      return
+    }
+    setConfirmClear(false)
+    setEraser(false)
+    startNewCreature()
+  }
 
   // Drag-from-tray: follow the pointer with a ghost; drop over the canvas
   // places the object there.
@@ -66,9 +82,35 @@ export function CreateScreen() {
         <FinishScreen />
       ) : (
         <div className="canvas-wrap">
-          <CreatureCanvas svgRef={svgRef} paintColor={paintColor} />
-          {mode === 'sketch' && (
-            <span className="canvas-hint">Draw your creature — hold a stroke to undo it, hold again to bring it back.</span>
+          <CreatureCanvas svgRef={svgRef} paintColor={paintColor} eraser={eraser} />
+          <div className="canvas-tools">
+            <button
+              className={`canvas-tool${eraser ? ' active' : ''}`}
+              onClick={() => setEraser((on) => !on)}
+              aria-pressed={eraser}
+              title="Rubber — tap or swipe to remove lines, colour and objects"
+              data-testid="eraser-button"
+            >
+              <span className="tool-icon">🧽</span>
+              <span className="tool-label">Rubber</span>
+            </button>
+            <button
+              className={`canvas-tool${confirmClear ? ' confirming' : ''}`}
+              onClick={clearAll}
+              title="Start this creature over"
+              data-testid="clear-button"
+            >
+              <span className="tool-icon">🗑️</span>
+              <span className="tool-label">{confirmClear ? 'Sure?' : 'Start over'}</span>
+            </button>
+          </div>
+          {mode === 'sketch' && !eraser && (
+            <span className="canvas-hint">Draw your creature — or tap the rubber to remove something.</span>
+          )}
+          {eraser && (
+            <span className="canvas-hint erasing" data-testid="eraser-hint">
+              Rubber on — tap or swipe over anything to remove it.
+            </span>
           )}
         </div>
       )}

@@ -45,6 +45,43 @@ describe('hold-to-undo stroke toggling', () => {
   })
 })
 
+describe('eraser', () => {
+  it('erases a stroke outright — unlike the hold gesture, it does not toggle back', () => {
+    state().addStroke([{ x: 10, y: 10 }])
+    const strokeId = state().draft.strokes[0].id
+    state().eraseStroke(strokeId)
+    expect(state().draft.strokes[0].removed).toBe(true)
+    state().eraseStroke(strokeId)
+    expect(state().draft.strokes[0].removed).toBe(true)
+  })
+
+  it('removes a fill', () => {
+    state().addFill({ x: 20, y: 20 }, '#ff0000')
+    state().addFill({ x: 40, y: 40 }, '#00ff00')
+    const [first, second] = state().draft.fills
+    state().removeFill(first.id)
+    expect(state().draft.fills).toHaveLength(1)
+    expect(state().draft.fills[0].id).toBe(second.id)
+  })
+
+  it('removes a placed object', () => {
+    state().placeObject('sofa', { x: 50, y: 50 })
+    const placedId = state().draft.objects[0].id
+    state().removeObject(placedId)
+    expect(state().draft.objects).toHaveLength(0)
+  })
+
+  it('start over clears strokes, fills, objects and powers', () => {
+    state().addStroke([{ x: 1, y: 1 }])
+    state().addFill({ x: 2, y: 2 }, '#ff0000')
+    state().placeObject('sofa', { x: 3, y: 3 })
+    state().togglePower('fire')
+    state().startNewCreature()
+    const { strokes, fills, objects, powers } = state().draft
+    expect([strokes.length, fills.length, objects.length, powers.length]).toEqual([0, 0, 0, 0])
+  })
+})
+
 describe('submit', () => {
   const makeReady = () => {
     state().addStroke([

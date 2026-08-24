@@ -30,9 +30,12 @@ export interface AppState extends PersistedState {
   addStroke: (points: Point[]) => void
   /** Hold-to-undo: toggles a stroke between removed and present. */
   toggleStroke: (strokeId: string) => void
+  /** Eraser: removes a stroke outright (no restore-on-repeat). */
+  eraseStroke: (strokeId: string) => void
 
   // Paint
   addFill: (seed: Point, color: string) => void
+  removeFill: (fillId: string) => void
 
   // Powers — exactly REQUIRED_POWERS must be chosen; a 4th tap is ignored.
   togglePower: (power: PowerId) => void
@@ -112,12 +115,25 @@ export const useAppStore = create<AppState>((set) => {
         },
       })),
 
+    eraseStroke: (strokeId) =>
+      update(({ draft }) => ({
+        draft: {
+          ...draft,
+          strokes: draft.strokes.map((s) => (s.id === strokeId ? { ...s, removed: true } : s)),
+        },
+      })),
+
     addFill: (seed, color) =>
       update(({ draft }) => ({
         draft: {
           ...draft,
           fills: [...draft.fills, { id: nextId('fill'), seed, color } satisfies Fill],
         },
+      })),
+
+    removeFill: (fillId) =>
+      update(({ draft }) => ({
+        draft: { ...draft, fills: draft.fills.filter((f) => f.id !== fillId) },
       })),
 
     togglePower: (power) =>

@@ -39,7 +39,8 @@ bottom dock of 5 modes, usable in any order (not a wizard):
 
 | Mode | What happens |
 |---|---|
-| ✏️ **Sketch** | Freehand-draw the creature. **Hold a stroke ~½s to undo it; hold again to bring it back** — direct-manipulation undo, no undo button. |
+| ✏️ **Sketch** | Freehand-draw the creature. **Hold a stroke ~½s to undo it; hold again to bring it back** — the handoff's direct-manipulation undo. |
+| 🧽 **Rubber** | Always available on the canvas: tap or swipe to remove lines, colour and objects (topmost first). Added after iPad testing — the hold gesture alone wasn't enough, and fills/objects previously couldn't be removed at all. **Start over** wipes the canvas, behind a two-tap confirm. |
 | 🖌️ **Paint** | Tap inside the sketch to flood-fill. Paint outside the lines? The fill detects the sketch boundary and snaps back inside on its own (gap-closing + leak detection — see `src/utils/floodFill.ts`). |
 | ⚡ **Powers** | Pick **exactly 3** of 7 powers (Water, Fire, Strong, Wind, Animal, Electricity, Venom). Power splits evenly. A dashed "chest" hotspot on the creature shows the slot count. |
 | 🧩 **Shapes** | Drag objects from the tray onto the creature, or browse the full library. Search matches **descriptions, not just names** ("something to sit on, kind of soft" → sofa, bean bag, cushion), with voice search via the inline mic. **No animals in the library, ever** — creatures come from the Sketch tool only. |

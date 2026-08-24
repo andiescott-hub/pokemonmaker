@@ -87,6 +87,22 @@ try {
   if ((await page.locator('[data-testid="stroke"]').count()) !== 1) fail('second hold did not restore the stroke')
   console.log('✓ sketch: hold-to-undo and hold-to-restore work')
 
+  // 2b. Rubber: erase a stroke, then draw it back and turn the rubber off.
+  await page.click('[data-testid="eraser-button"]')
+  await page.waitForSelector('[data-testid="eraser-hint"]')
+  await page.mouse.click(edgeX, cy)
+  if ((await page.locator('[data-testid="stroke"]').count()) !== 0) fail('rubber did not erase the stroke')
+  await page.click('[data-testid="eraser-button"]') // rubber off
+  await page.mouse.move(cx - 120, cy)
+  await page.mouse.down()
+  for (let i = 1; i <= steps; i++) {
+    const angle = (i / steps) * Math.PI * 2
+    await page.mouse.move(cx - 120 * Math.cos(angle), cy - 90 * Math.sin(angle))
+  }
+  await page.mouse.up()
+  if ((await page.locator('[data-testid="stroke"]').count()) !== 1) fail('could not redraw after erasing')
+  console.log('✓ rubber: erases a stroke, and drawing works again once off')
+
   // 3. Paint: pick a color and tap inside the blob.
   await page.click('[data-testid="dock-paint"]')
   await page.click('[data-testid="swatch-4f8fd1"]')
@@ -113,6 +129,16 @@ try {
   await page.click('[data-testid="search-results"] [data-testid="object-sofa"]')
   await page.waitForSelector('[data-testid="placed-sofa"]')
   console.log('✓ shapes: description search found the sofa and placed it')
+
+  // The rubber removes placed objects too, then put it back for the finish.
+  await page.click('[data-testid="eraser-button"]')
+  await page.click('[data-testid="placed-sofa"]')
+  if ((await page.locator('[data-testid="placed-sofa"]').count()) !== 0) fail('rubber did not remove the object')
+  await page.click('[data-testid="eraser-button"]')
+  await page.click('[data-testid="browse-library"]')
+  await page.click('[data-testid="object-sofa"]')
+  await page.waitForSelector('[data-testid="placed-sofa"]')
+  console.log('✓ rubber: removes a placed object')
 
   // 6. Finish: generate (stub) and submit.
   await page.click('[data-testid="dock-finish"]')

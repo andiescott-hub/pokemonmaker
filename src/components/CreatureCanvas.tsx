@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useAppStore } from '../store'
-import { CANVAS_W, CANVAS_H, STROKE_WIDTH, renderFillLayer, strokePath } from '../utils/render'
+import { CANVAS_W, CANVAS_H, STROKE_WIDTH, fillIdAtPoint, renderFillLayer, strokePath } from '../utils/render'
 import { objectById } from '../data/objects'
 import { REQUIRED_POWERS, type Point, type Stroke } from '../types'
 
@@ -38,7 +38,12 @@ interface CreatureCanvasProps {
   svgRef: RefObject<SVGSVGElement | null>
   /** Active paint color (paint mode only). */
   paintColor: string
+  /** Eraser tool active — taps and drags remove things instead of adding. */
+  eraser: boolean
 }
+
+/** Half-size of an object's tap target, in canvas units. */
+const OBJECT_HIT_RADIUS = 40
 
 /**
  * The single persistent canvas shared by all Create modes.
@@ -51,11 +56,14 @@ interface CreatureCanvasProps {
  *   hold-to-undo gesture still works on strokes.
  * - Powers: shows the dashed chest hotspot with the slot count.
  * - Shapes: drag placed objects around.
+ * - Eraser (any canvas mode): tap or swipe to remove objects, strokes and
+ *   fills — the explicit alternative to the hold-to-undo gesture.
  */
-export function CreatureCanvas({ svgRef, paintColor }: CreatureCanvasProps) {
+export function CreatureCanvas({ svgRef, paintColor, eraser }: CreatureCanvasProps) {
   const mode = useAppStore((s) => s.mode)
   const draft = useAppStore((s) => s.draft)
-  const { addStroke, toggleStroke, addFill, moveObject } = useAppStore.getState()
+  const { addStroke, toggleStroke, eraseStroke, addFill, removeFill, moveObject, removeObject } =
+    useAppStore.getState()
 
   const [liveStroke, setLiveStroke] = useState<Point[] | null>(null)
   const holdTimer = useRef<number | null>(null)
@@ -91,7 +99,38 @@ export function CreatureCanvas({ svgRef, paintColor }: CreatureCanvasProps) {
   }
 
   const strokeAt = (p: Point): Stroke | undefined =>
-    [...draft.strokes].reverse().find((s) => distToStroke(p, s) < STROKE_HIT_DISTANCE)
+    [...draft.strokes].reverse().find((s) => !s.removed && distToStroke(p, s) < STROKE_HIT_DISTANCE)
+
+  const objectAt = (p: Point) =>
+    [...draft.objects]
+      .reverse()
+      .find((o) => Math.hypot(p.x - o.position.x, p.y - o.position.y) < OBJECT_HIT_RADIUS * o.scale)
+
+  /**
+   * Erase whatever is under the point, topmost first: objects sit above
+   * strokes, which sit above fills. `includeFills` is off while dragging —
+   * finding the tapped fill costs a flood fill, so it runs on tap only.
+   */
+  const eraseAt = (p: Point, includeFills: boolean): boolean => {
+    const obj = objectAt(p)
+    if (obj) {
+      removeObject(obj.id)
+      return true
+    }
+    const stroke = strokeAt(p)
+    if (stroke) {
+      eraseStroke(stroke.id)
+      return true
+    }
+    if (includeFills) {
+      const fillId = fillIdAtPoint(draft.strokes, draft.fills, p)
+      if (fillId) {
+        removeFill(fillId)
+        return true
+      }
+    }
+    return false
+  }
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     const svg = svgRef.current
@@ -100,6 +139,12 @@ export function CreatureCanvas({ svgRef, paintColor }: CreatureCanvasProps) {
     const p = toCanvasPoint(svg, e.clientX, e.clientY)
     downPoint.current = p
     holdHandled.current = false
+
+    if (eraser) {
+      // Erasing replaces drawing/filling entirely while the tool is on.
+      eraseAt(p, true)
+      return
+    }
 
     if (mode === 'sketch' || mode === 'paint') {
       // Arm the hold-to-undo/redo gesture; a hold beats drawing/filling.
@@ -121,6 +166,11 @@ export function CreatureCanvas({ svgRef, paintColor }: CreatureCanvasProps) {
     if (!svg || !downPoint.current) return
     const p = toCanvasPoint(svg, e.clientX, e.clientY)
 
+    if (eraser) {
+      // Swipe the rubber across strokes and objects to wipe them out.
+      eraseAt(p, false)
+      return
+    }
     if (draggingObject.current) {
       moveObject(draggingObject.current, p)
       return
@@ -143,7 +193,7 @@ export function CreatureCanvas({ svgRef, paintColor }: CreatureCanvasProps) {
     if (!svg || !downPoint.current) return
     const p = toCanvasPoint(svg, e.clientX, e.clientY)
 
-    if (!holdHandled.current) {
+    if (!holdHandled.current && !eraser) {
       if (mode === 'sketch' && liveStroke) {
         addStroke(liveStroke.length > 1 ? [...liveStroke, p] : liveStroke)
       } else if (mode === 'paint') {
@@ -173,7 +223,7 @@ export function CreatureCanvas({ svgRef, paintColor }: CreatureCanvasProps) {
   return (
     <svg
       ref={svgRef}
-      className={`creature-canvas mode-${mode}`}
+      className={`creature-canvas mode-${mode}${eraser ? ' erasing' : ''}`}
       viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -215,6 +265,11 @@ export function CreatureCanvas({ svgRef, paintColor }: CreatureCanvasProps) {
             dominantBaseline="central"
             className={`placed-object${placed.merged ? ' merged' : ''}`}
             onPointerDown={(e) => {
+              if (eraser) {
+                e.stopPropagation()
+                removeObject(placed.id)
+                return
+              }
               if (mode !== 'shapes') return
               e.stopPropagation()
               svgRef.current?.setPointerCapture(e.pointerId)

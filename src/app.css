@@ -128,6 +128,11 @@ button {
   touch-action: none;
 }
 
+.creature-canvas.erasing {
+  border-color: var(--accent);
+  background: #fffdfc;
+}
+
 .canvas-hint {
   position: absolute;
   bottom: 12px;
@@ -140,6 +145,51 @@ button {
   border-radius: var(--radius-pill);
   pointer-events: none;
   white-space: nowrap;
+}
+
+.canvas-hint.erasing {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+/* Rubber + start-over, floating over the canvas (mirrors the mic, which
+   sits top-right in the header). */
+.canvas-tools {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.canvas-tool {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 0 0 2px var(--line), var(--shadow);
+}
+
+.canvas-tool .tool-icon {
+  font-size: 18px;
+}
+
+.canvas-tool.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 3px var(--accent);
+}
+
+.canvas-tool.confirming {
+  color: #fff;
+  background: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .stroke {

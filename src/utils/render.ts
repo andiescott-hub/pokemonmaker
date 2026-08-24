@@ -1,4 +1,4 @@
-import type { CreatureDraft, Fill, Stroke } from '../types'
+import type { CreatureDraft, Fill, Point, Stroke } from '../types'
 import { correctedFill } from './floodFill'
 import { objectById } from '../data/objects'
 
@@ -31,19 +31,14 @@ function drawStrokes(ctx: CanvasRenderingContext2D, strokes: Stroke[], scale = 1
  * keeps the BFS fast on iPad. */
 const FILL_SCALE = 0.35
 
-/**
- * Compute the paint layer: rasterize visible strokes as barriers, then run
- * the spill-corrected flood fill for each stored fill seed.
- */
-export function renderFillLayer(strokes: Stroke[], fills: Fill[]): HTMLCanvasElement {
-  const w = Math.round(CANVAS_W * FILL_SCALE)
-  const h = Math.round(CANVAS_H * FILL_SCALE)
-  const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
-  const ctx = canvas.getContext('2d', { willReadFrequently: true })!
-  if (fills.length === 0) return canvas
+/** Fill-resolution raster size. */
+const fillSize = () => ({
+  width: Math.round(CANVAS_W * FILL_SCALE),
+  height: Math.round(CANVAS_H * FILL_SCALE),
+})
 
+/** Rasterize visible strokes into a barrier mask at fill resolution. */
+function strokeBarriers(ctx: CanvasRenderingContext2D, strokes: Stroke[], w: number, h: number): Uint8Array {
   drawStrokes(ctx, strokes, FILL_SCALE)
   const raster = ctx.getImageData(0, 0, w, h)
   const barriers = new Uint8Array(w * h)
@@ -51,7 +46,44 @@ export function renderFillLayer(strokes: Stroke[], fills: Fill[]): HTMLCanvasEle
     if (raster.data[i * 4 + 3] > 40) barriers[i] = 1
   }
   ctx.clearRect(0, 0, w, h)
+  return barriers
+}
 
+/**
+ * Which fill is painting the region under `point`, if any — used by the
+ * eraser. Runs one flood fill from the tapped point and returns the
+ * topmost fill whose seed lands in the same enclosed region.
+ */
+export function fillIdAtPoint(strokes: Stroke[], fills: Fill[], point: Point): string | null {
+  if (fills.length === 0) return null
+  const { width: w, height: h } = fillSize()
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!
+  const barriers = strokeBarriers(ctx, strokes, w, h)
+  const { region } = correctedFill(barriers, { width: w, height: h }, point.x * FILL_SCALE, point.y * FILL_SCALE)
+  for (let i = fills.length - 1; i >= 0; i--) {
+    const sx = Math.round(fills[i].seed.x * FILL_SCALE)
+    const sy = Math.round(fills[i].seed.y * FILL_SCALE)
+    if (sx >= 0 && sy >= 0 && sx < w && sy < h && region[sy * w + sx]) return fills[i].id
+  }
+  return null
+}
+
+/**
+ * Compute the paint layer: rasterize visible strokes as barriers, then run
+ * the spill-corrected flood fill for each stored fill seed.
+ */
+export function renderFillLayer(strokes: Stroke[], fills: Fill[]): HTMLCanvasElement {
+  const { width: w, height: h } = fillSize()
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!
+  if (fills.length === 0) return canvas
+
+  const barriers = strokeBarriers(ctx, strokes, w, h)
   const out = ctx.createImageData(w, h)
   for (const fill of fills) {
     const { region } = correctedFill(barriers, { width: w, height: h }, fill.seed.x * FILL_SCALE, fill.seed.y * FILL_SCALE)
