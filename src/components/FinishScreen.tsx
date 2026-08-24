@@ -1,5 +1,6 @@
 import { useAppStore } from '../store'
 import { generateCreature } from '../services/generation'
+import { hasRealGenerator } from '../config'
 import { REQUIRED_POWERS } from '../types'
 
 /**
@@ -18,11 +19,13 @@ export function FinishScreen() {
 
   const generate = async (isRegenerate: boolean) => {
     if (isRegenerate) bumpRegenerate()
-    setGeneration('generating')
+    // Two visible phases: Claude reads the drawing, then Gemini paints it.
+    setGeneration(hasRealGenerator() ? 'analysing' : 'generating')
     try {
-      const image = await generateCreature(useAppStore.getState().draft)
-      setGeneration('generated', image)
-    } catch {
+      const result = await generateCreature(useAppStore.getState().draft)
+      setGeneration('generated', result)
+    } catch (error) {
+      console.error('generation failed:', error)
       setGeneration('error')
     }
   }
@@ -56,10 +59,14 @@ export function FinishScreen() {
         </div>
       )}
 
-      {draft.generationStatus === 'generating' && (
+      {(draft.generationStatus === 'analysing' || draft.generationStatus === 'generating') && (
         <div className="finish-gate" data-testid="generating">
           <div className="spinner" aria-hidden />
-          <p>Mixing your sketch, paint, shapes &amp; powers…</p>
+          <p>
+            {draft.generationStatus === 'analysing'
+              ? 'Looking closely at your drawing…'
+              : 'Painting your creature…'}
+          </p>
         </div>
       )}
 
@@ -78,7 +85,14 @@ export function FinishScreen() {
             <span className="ai-badge">AI generated</span>
             <img src={draft.generatedImage} alt="Your finished creature" />
           </div>
-          <p className="finish-caption">AI blended sketch, paint, shapes &amp; powers into one finished creature.</p>
+          {draft.creatureName && (
+            <h2 className="creature-name" data-testid="creature-name">
+              {draft.creatureName}
+            </h2>
+          )}
+          <p className="finish-caption" data-testid="creature-description">
+            {draft.description || 'AI blended sketch, paint, shapes & powers into one finished creature.'}
+          </p>
           <div className="finish-actions">
             <button className="secondary-button" onClick={() => generate(true)} data-testid="regenerate-button">
               Regenerate

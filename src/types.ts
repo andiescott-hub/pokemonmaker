@@ -60,7 +60,7 @@ export interface PlacedObject {
   merged: boolean
 }
 
-export type GenerationStatus = 'idle' | 'generating' | 'generated' | 'error'
+export type GenerationStatus = 'idle' | 'analysing' | 'generating' | 'generated' | 'error'
 
 /** The in-progress creature being built on the Create canvas. */
 export interface CreatureDraft {
@@ -71,6 +71,9 @@ export interface CreatureDraft {
   generationStatus: GenerationStatus
   /** Data URL of the generated image, once the Finish step has run. */
   generatedImage: string | null
+  /** Claude's reading of what the child drew, shown back to them. */
+  description: string
+  creatureName: string
   regenerateCount: number
 }
 
@@ -80,6 +83,8 @@ export interface SubmittedCreature {
   image: string
   powers: PowerId[]
   submittedAt: number
+  description: string
+  creatureName: string
 }
 
 export type CreateMode = 'sketch' | 'paint' | 'powers' | 'shapes' | 'finish'
@@ -92,5 +97,7 @@ export const emptyDraft = (): CreatureDraft => ({
   objects: [],
   generationStatus: 'idle',
   generatedImage: null,
+  description: '',
+  creatureName: '',
   regenerateCount: 0,
 })

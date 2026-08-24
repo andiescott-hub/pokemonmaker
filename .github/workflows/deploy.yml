@@ -29,6 +29,12 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+        env:
+          # Set these as repository variables to point the app at your
+          # generation worker (Settings → Secrets and variables → Actions).
+          # Unset = the app uses its offline preview generator.
+          VITE_GENERATOR_URL: ${{ vars.VITE_GENERATOR_URL }}
+          VITE_ACCESS_CODE: ${{ vars.VITE_ACCESS_CODE }}
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

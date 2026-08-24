@@ -516,6 +516,25 @@ button {
 .finish-caption {
   font-size: 15px;
   color: var(--ink-soft);
+  text-align: center;
+  max-width: 620px;
+  line-height: 1.45;
+}
+
+/* Claude's reading of the drawing, shown back to the child. */
+.creature-name {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+}
+
+.detail-description {
+  font-size: 15px;
+  color: var(--ink-soft);
+  text-align: center;
+  max-width: 520px;
+  line-height: 1.45;
 }
 
 .finish-actions {

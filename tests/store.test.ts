@@ -91,7 +91,11 @@ describe('submit', () => {
     state().togglePower('water')
     state().togglePower('fire')
     state().togglePower('venom')
-    state().setGeneration('generated', 'data:image/png;base64,xxx')
+    state().setGeneration('generated', {
+      image: 'data:image/png;base64,xxx',
+      description: 'A round tortoise with a couch on its back.',
+      creatureName: 'Couchback',
+    })
   }
 
   it('is blocked until the creature has been generated with exactly 3 powers', () => {
@@ -104,6 +108,9 @@ describe('submit', () => {
     state().submitCreature()
     expect(state().submitted).toHaveLength(1)
     expect(state().submitted[0].powers).toEqual(['water', 'fire', 'venom'])
+    // Claude's reading of the drawing travels with the creature into the gallery.
+    expect(state().submitted[0].creatureName).toBe('Couchback')
+    expect(state().submitted[0].description).toContain('couch on its back')
     expect(state().draft.strokes).toHaveLength(0)
     expect(state().draft.generationStatus).toBe('idle')
   })

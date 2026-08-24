@@ -41,8 +41,10 @@ export function HomeGallery() {
       {open && (
         <div className="detail-overlay" onClick={() => setOpen(null)} data-testid="creature-detail">
           <div className="detail-card" onClick={(e) => e.stopPropagation()}>
-            <img src={open.image} alt="Submitted creature" />
+            <img src={open.image} alt={open.creatureName || 'Submitted creature'} />
             <div className="detail-meta">
+              {open.creatureName && <h2 className="creature-name">{open.creatureName}</h2>}
+              {open.description && <p className="detail-description">{open.description}</p>}
               <div className="detail-powers">
                 {open.powers.map((id) => {
                   const power = POWERS.find((p) => p.id === id)
