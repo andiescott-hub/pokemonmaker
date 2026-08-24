@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#eae7e0;font-family:'Kalam',cursive}
+.dv-turn{padding:40px 44px 60px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 22px}
+.dv-tid{font:700 11px 'Kalam',cursive;padding:3px 8px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:700 16px 'Kalam',cursive;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}
+.dv-oid{font:700 12px 'Kalam',cursive;padding:3px 9px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 13px 'Kalam',cursive;color:rgba(0,0,0,.6)}
+.dv-card{max-width:100%;overflow:visible}
+.dv-opt:target .dv-oid{background:#e3402a;color:#fff}
+.dv-next{margin:26px 0 0;font:400 13px/1.6 'Kalam',cursive;color:rgba(0,0,0,.55)}
+.pad-frame{width:340px;border:3px solid #1a1a1a;border-radius:20px;background:#fff;padding:14px 14px 18px;box-shadow:4px 4px 0 rgba(0,0,0,.14);position:relative}
+.pad-canvas{width:100%;height:170px;border:2px dashed rgba(26,26,26,.35);border-radius:10px;background:#fbfaf7;display:flex;align-items:center;justify-content:center;position:relative;overflow:visible}
+.dock{display:flex;gap:10px;justify-content:center;margin-top:12px}
+.dock-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.dock-circ{width:30px;height:30px;border-radius:50%;border:2px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font:700 11px 'Kalam',cursive;background:#fff}
+.dock-active .dock-circ{border-color:#e3402a;background:#fdeae6;color:#e3402a}
+.dock-label{font:400 9px 'Kalam',cursive;color:#1a1a1a}
+.screen-title{position:absolute;top:-11px;left:14px;background:#fff;padding:0 6px;font:700 12px 'Kalam',cursive;color:#1a1a1a}
+.callout{position:absolute;border:2px dashed #e3402a;border-radius:10px;padding:5px 8px;font:400 10px/1.3 'Kalam',cursive;color:#a02a18;background:#fff}
+.mic-btn{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;border:2px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font:700 9px 'Kalam',cursive;background:#fff}
+.swatch-row{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.swatch{width:16px;height:16px;border-radius:50%;border:2px solid #1a1a1a}
+.tray{display:flex;gap:6px;margin-top:10px;overflow:hidden}
+.tray-item{width:32px;height:26px;border:2px solid #1a1a1a;border-radius:6px;background:#fbfaf7;display:flex;align-items:center;justify-content:center;font:400 8px 'Kalam',cursive}
+.power-chip{border:2px solid #1a1a1a;border-radius:14px;padding:3px 8px;font:400 10px 'Kalam',cursive;display:inline-flex;align-items:center}
+.power-chip.on{border-color:#e3402a;background:#fdeae6;color:#a02a18;font-weight:700}
+.stepper{display:flex;gap:6px;font:700 10px 'Kalam',cursive;color:rgba(26,26,26,.4);margin-bottom:4px}
+.stepper .on{color:#e3402a}
+.tab-bar{display:flex;gap:16px;justify-content:center;border-bottom:2px solid #1a1a1a;padding-bottom:8px;margin-bottom:10px}
+.tab{font:700 11px 'Kalam',cursive;color:rgba(26,26,26,.4);padding-bottom:4px}
+.tab.on{color:#1a1a1a;border-bottom:3px solid #e3402a}
+.pokeball-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:6px}
+.pokeball-slot{display:flex;align-items:center;justify-content:center}
+.sparkle-badge{position:absolute;top:6px;right:6px;font:700 9px 'Kalam',cursive;color:#a02a18;border:2px dashed #e3402a;border-radius:8px;padding:2px 6px;background:#fff}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t4">
+<div class="dv-thd"><a class="dv-tid" href="#t4">4</a><span class="dv-tname">Object library, searchable by voice</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="4a">
+<div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>Categorised shelf with a voice search bar</div>
+<div class="dv-card" style="display:flex;gap:20px;flex-wrap:wrap">
+
+<div class="pad-frame" style="width:380px">
+<div class="screen-title">Shapes &mdash; library</div>
+<div style="display:flex;align-items:center;gap:8px;border:2px solid #1a1a1a;border-radius:20px;padding:5px 10px;margin-top:4px">
+<span style="font-size:11px;color:rgba(26,26,26,.5);flex:1">Search objects&hellip;</span>
+<div style="width:22px;height:22px;border-radius:50%;border:2px solid #e3402a;display:flex;align-items:center;justify-content:center;font:700 8px 'Kalam',cursive;color:#e3402a">Mic</div>
+</div>
+<div class="callout" style="position:static;width:auto;margin-top:6px">say "couch" or "something to sit on" &mdash; it filters as you speak</div>
+
+<div style="margin-top:10px;font:700 10px 'Kalam',cursive">Furniture</div>
+<div class="tray"><div class="tray-item">Sofa</div><div class="tray-item">Chair</div><div class="tray-item">Table</div><div class="tray-item">Lamp</div></div>
+
+<div style="margin-top:8px;font:700 10px 'Kalam',cursive">Everyday objects</div>
+<div class="tray"><div class="tray-item">Hat</div><div class="tray-item">Box</div><div class="tray-item">Umbrella</div><div class="tray-item">Bag</div></div>
+
+<div style="margin-top:8px;font:700 10px 'Kalam',cursive">Nature</div>
+<div class="tray"><div class="tray-item">Rock</div><div class="tray-item">Tree</div><div class="tray-item">Cloud</div><div class="tray-item">Leaf</div></div>
+
+<div style="margin-top:8px;font:700 10px 'Kalam',cursive">Shapes &amp; misc</div>
+<div class="tray"><div class="tray-item">Tri</div><div class="tray-item">Star</div><div class="tray-item">Gear</div><div class="tray-item">Balloon</div></div>
+
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:10px">a big, browsable library of everything &mdash; except animals, that's what you're drawing</div>
+<div class="dock">
+<div class="dock-item"><div class="dock-circ">Pn</div><div class="dock-label">Sketch</div></div>
+<div class="dock-item"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item dock-active"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+<div class="dock-item"><div class="dock-circ">Fin</div><div class="dock-label">Finish</div></div>
+</div>
+</div>
+
+<div class="pad-frame" style="width:340px">
+<div class="screen-title">Voice search, listening</div>
+<div style="display:flex;flex-direction:column;align-items:center;margin-top:10px;gap:10px">
+<div style="width:64px;height:64px;border-radius:50%;border:3px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font:700 12px 'Kalam',cursive">Mic</div>
+<div class="callout" style="position:static;width:220px;text-align:center">"something to sit on, kind of soft"</div>
+</div>
+<div style="margin-top:12px;font:700 10px 'Kalam',cursive;text-align:center">Results</div>
+<div class="tray" style="justify-content:center"><div class="tray-item">Sofa</div><div class="tray-item">Bean bag</div><div class="tray-item">Cushion</div></div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:8px">matches by description, not just name &mdash; drag a result onto the creature</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "add more categories to <a class="dv-oid" href="#4a">4a</a>" &middot; "show what dragging a search result onto the creature looks like" &middot; "start on higher-fidelity screens for the whole flow"</p>
+</section>
+
+<section class="dv-turn" id="t3">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">Chosen direction: <a class="dv-oid" href="#1a">1a</a> dock + <a class="dv-oid" href="#2a">2a</a> Home tab, stitched into one flow</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="3a">
+<div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Full flow</div>
+<div class="dv-card" style="display:flex;gap:20px;flex-wrap:wrap">
+
+<div class="pad-frame">
+<div class="tab-bar"><span class="tab on">Create</span><span class="tab">Home</span></div>
+<div class="pad-canvas">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="110" y1="110" x2="112" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="130" y1="100" x2="136" y2="128" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<circle cx="60" cy="55" r="3" fill="#1a1a1a"/>
+</svg>
+<div class="callout" style="bottom:4px;right:4px;width:110px">hold a stroke to undo, hold again to redo</div>
+</div>
+<div class="dock">
+<div class="dock-item dock-active"><div class="dock-circ">Pn</div><div class="dock-label">Sketch</div></div>
+<div class="dock-item"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+<div class="dock-item"><div class="dock-circ">Fin</div><div class="dock-label">Finish</div></div>
+</div>
+</div>
+
+<div class="pad-frame">
+<div class="tab-bar"><span class="tab on">Create</span><span class="tab">Home</span></div>
+<div class="pad-canvas">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="110" y1="110" x2="112" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="130" y1="100" x2="136" y2="128" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+</svg>
+<div class="callout" style="top:4px;left:4px;width:110px">paint outside the lines? it snaps back on its own</div>
+</div>
+<div class="swatch-row"><div class="swatch" style="background:#f0b25b"></div><div class="swatch" style="background:#4a90c4"></div><div class="swatch" style="background:#5ea86a"></div><div class="swatch" style="background:#c65a5a"></div></div>
+<div class="dock">
+<div class="dock-item"><div class="dock-circ">Pn</div><div class="dock-label">Sketch</div></div>
+<div class="dock-item dock-active"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+<div class="dock-item"><div class="dock-circ">Fin</div><div class="dock-label">Finish</div></div>
+</div>
+</div>
+
+<div class="pad-frame">
+<div class="tab-bar"><span class="tab on">Create</span><span class="tab">Home</span></div>
+<div class="pad-canvas">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="95" cy="68" r="20" fill="#fff" stroke="#e3402a" stroke-width="2" stroke-dasharray="3 3"/>
+<text x="95" y="72" font-size="9" text-anchor="middle" font-family="Kalam" fill="#a02a18">3 slots</text>
+</svg>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px">
+<span class="power-chip on">Water</span><span class="power-chip">Fire</span><span class="power-chip on">Venom</span><span class="power-chip">Wind</span><span class="power-chip on">Electric</span><span class="power-chip">Strong</span><span class="power-chip">Animal</span>
+</div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:4px">pick exactly 3 &mdash; power split evenly</div>
+<div class="dock">
+<div class="dock-item"><div class="dock-circ">Pn</div><div class="dock-label">Sketch</div></div>
+<div class="dock-item"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item dock-active"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+<div class="dock-item"><div class="dock-circ">Fin</div><div class="dock-label">Finish</div></div>
+</div>
+</div>
+
+<div class="pad-frame">
+<div class="tab-bar"><span class="tab on">Create</span><span class="tab">Home</span></div>
+<div class="pad-canvas">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<rect x="95" y="72" width="55" height="22" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+<rect x="93" y="60" width="14" height="18" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+<rect x="140" y="60" width="14" height="18" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+</svg>
+<div class="callout" style="bottom:4px;left:4px;width:120px">say "sit the couch on its back" &mdash; AI joins them</div>
+</div>
+<div class="tray"><div class="tray-item">Sofa</div><div class="tray-item">Tri</div><div class="tray-item">Hat</div><div class="tray-item">+more</div></div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:4px">objects only &mdash; no animals</div>
+<div class="dock">
+<div class="dock-item"><div class="dock-circ">Pn</div><div class="dock-label">Sketch</div></div>
+<div class="dock-item"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item dock-active"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+<div class="dock-item"><div class="dock-circ">Fin</div><div class="dock-label">Finish</div></div>
+</div>
+</div>
+
+<div class="pad-frame">
+<div class="tab-bar"><span class="tab on">Create</span><span class="tab">Home</span></div>
+<div class="pad-canvas" style="position:relative">
+<div class="sparkle-badge">AI generated</div>
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<rect x="95" y="72" width="55" height="22" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+<circle cx="70" cy="55" r="14" fill="#fff" stroke="#e3402a" stroke-width="2" stroke-dasharray="3 3"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+</svg>
+</div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:6px">AI blends sketch, paint, shapes &amp; powers into one finished Pok&eacute;mon</div>
+<div style="display:flex;justify-content:center;gap:8px;margin-top:10px"><span class="power-chip">Regenerate</span><span class="power-chip on">Submit</span></div>
+<div class="dock">
+<div class="dock-item"><div class="dock-circ">Pn</div><div class="dock-label">Sketch</div></div>
+<div class="dock-item"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+<div class="dock-item dock-active"><div class="dock-circ">Fin</div><div class="dock-label">Finish</div></div>
+</div>
+</div>
+
+<div class="pad-frame">
+<div class="tab-bar"><span class="tab">Create</span><span class="tab on">Home</span></div>
+<div class="pokeball-grid">
+<div class="pokeball-slot"><svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg></div>
+<div class="pokeball-slot"><svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg></div>
+<div class="pokeball-slot"><svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg></div>
+<div class="pokeball-slot" style="width:30px;height:30px;border:2px dashed rgba(26,26,26,.35);border-radius:50%"></div>
+<div class="pokeball-slot" style="width:30px;height:30px;border:2px dashed rgba(26,26,26,.35);border-radius:50%"></div>
+</div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:6px">every submitted Pok&eacute;mon lands here as a Pok&eacute; Ball</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "show what tapping a Pok&eacute; Ball opens" &middot; "add a loading state to Finish" &middot; "start on higher-fidelity screens for this flow"</p>
+</section>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Adds: AI generate-&amp;-combine step, Submit, and a Home area of Poké Balls</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Home as its own tab, grid gallery</div>
+<div class="dv-card" style="display:flex;gap:20px;flex-wrap:wrap">
+
+<div class="pad-frame">
+<div class="tab-bar"><span class="tab on">Create</span><span class="tab">Home</span></div>
+<div class="pad-canvas" style="position:relative">
+<div class="sparkle-badge">AI generated</div>
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<rect x="95" y="72" width="55" height="22" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+<circle cx="70" cy="55" r="14" fill="#fff" stroke="#e3402a" stroke-width="2" stroke-dasharray="3 3"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+</svg>
+</div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:6px">AI blends the sketch, paint, shapes &amp; powers into one finished Pok&eacute;mon</div>
+<div style="display:flex;justify-content:center;gap:8px;margin-top:10px"><span class="power-chip">Regenerate</span><span class="power-chip on">Submit</span></div>
+</div>
+
+<div class="pad-frame">
+<div class="tab-bar"><span class="tab">Create</span><span class="tab on">Home</span></div>
+<div class="pokeball-grid">
+<div class="pokeball-slot"><svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg></div>
+<div class="pokeball-slot"><svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg></div>
+<div class="pokeball-slot"><svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg></div>
+<div class="pokeball-slot"><svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg></div>
+<div class="pokeball-slot" style="width:30px;height:30px;border:2px dashed rgba(26,26,26,.35);border-radius:50%"></div>
+<div class="pokeball-slot"><svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg></div>
+<div class="pokeball-slot"><svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg></div>
+<div class="pokeball-slot" style="width:30px;height:30px;border:2px dashed rgba(26,26,26,.35);border-radius:50%"></div>
+<div class="pokeball-slot" style="width:30px;height:30px;border:2px dashed rgba(26,26,26,.35);border-radius:50%"></div>
+<div class="pokeball-slot" style="width:30px;height:30px;border:2px dashed rgba(26,26,26,.35);border-radius:50%"></div>
+</div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:6px">every submitted Pok&eacute;mon lands here as a Pok&eacute; Ball &mdash; tap one to open it</div>
+</div>
+
+</div>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Home as a pull-out shelf, stays inside the workspace</div>
+<div class="dv-card" style="display:flex;gap:20px;flex-wrap:wrap">
+
+<div class="pad-frame" style="width:400px">
+<div class="screen-title">Finish &amp; Generate</div>
+<div style="display:flex;gap:10px">
+<div style="display:flex;flex-direction:column;gap:8px;padding-top:4px">
+<div class="dock-circ">Pn</div><div class="dock-circ">Br</div><div class="dock-circ">Pw</div><div class="dock-circ">Sh</div>
+<div class="dock-circ" style="margin-top:8px">Hm</div>
+</div>
+<div style="flex:1;position:relative">
+<div class="pad-canvas" style="height:150px;position:relative">
+<div class="sparkle-badge">AI generated</div>
+<svg width="140" height="110" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<rect x="95" y="72" width="50" height="20" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+<circle cx="70" cy="55" r="13" fill="#fff" stroke="#e3402a" stroke-width="2" stroke-dasharray="3 3"/>
+</svg>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px"><span class="power-chip">Regenerate</span><span class="power-chip on">Submit</span></div>
+</div>
+</div>
+<div style="font-size:9px;color:rgba(26,26,26,.6);margin-top:8px">AI combines sketch + paint + shapes + powers into one image before you submit</div>
+</div>
+
+<div class="pad-frame" style="width:400px">
+<div class="screen-title">Home shelf, pulled out</div>
+<div style="display:flex;gap:10px">
+<div style="display:flex;flex-direction:column;gap:8px;padding-top:4px">
+<div class="dock-circ">Pn</div><div class="dock-circ">Br</div><div class="dock-circ">Pw</div><div class="dock-circ">Sh</div>
+<div class="dock-circ" style="border-color:#e3402a;background:#fdeae6;color:#e3402a;margin-top:8px">Hm</div>
+</div>
+<div style="flex:1;background:#fbfaf7;border:2px dashed rgba(26,26,26,.35);border-radius:10px;padding:8px">
+<div style="font-size:9px;color:rgba(26,26,26,.6);margin-bottom:6px">Home shelf</div>
+<div style="display:flex;gap:6px;overflow:hidden">
+<svg width="26" height="26" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg>
+<svg width="26" height="26" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg>
+<svg width="26" height="26" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#1a1a1a" stroke-width="2"/><path d="M3 20 A17 17 0 0 1 37 20 Z" fill="#e3402a"/><line x1="3" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2"/></svg>
+<div style="width:26px;height:26px;border:2px dashed rgba(26,26,26,.35);border-radius:50%"></div>
+<div style="width:26px;height:26px;border:2px dashed rgba(26,26,26,.35);border-radius:50%"></div>
+</div>
+</div>
+</div>
+<div style="font-size:9px;color:rgba(26,26,26,.6);margin-top:8px">Home slides out over the canvas &mdash; creating stays one tap away, never a separate screen</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "make <a class="dv-oid" href="#2a">2a</a> the direction, drop the drawer idea" &middot; "show what tapping a Pok&eacute; Ball in <a class="dv-oid" href="#2a">2a</a> opens" &middot; "add a loading/thinking state for the AI generate step"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Creature Maker &mdash; iPad app, 3 flow structures</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>One canvas, mode dock at bottom</div>
+<div class="dv-card" style="display:flex;gap:20px;flex-wrap:wrap">
+
+<div class="pad-frame">
+<div class="screen-title">Sketch</div>
+<div class="mic-btn">Mic</div>
+<div class="pad-canvas">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="110" y1="110" x2="112" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="130" y1="100" x2="136" y2="128" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<circle cx="60" cy="55" r="3" fill="#1a1a1a"/>
+</svg>
+<div class="callout" style="bottom:4px;right:4px;width:120px">hold on a stroke to undo it &mdash; hold again to redo</div>
+</div>
+<div class="dock">
+<div class="dock-item dock-active"><div class="dock-circ">Pn</div><div class="dock-label">Pencil</div></div>
+<div class="dock-item"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+</div>
+</div>
+
+<div class="pad-frame">
+<div class="screen-title">Paint</div>
+<div class="mic-btn">Mic</div>
+<div class="pad-canvas">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<path d="M158 62 Q168 60 166 50" fill="none" stroke="#f0b25b" stroke-width="4" stroke-linecap="round"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="110" y1="110" x2="112" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="130" y1="100" x2="136" y2="128" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+</svg>
+<div class="callout" style="top:4px;left:4px;width:110px">paint outside the lines? it snaps back on its own</div>
+</div>
+<div class="swatch-row">
+<div class="swatch" style="background:#f0b25b"></div><div class="swatch" style="background:#4a90c4"></div><div class="swatch" style="background:#5ea86a"></div><div class="swatch" style="background:#c65a5a"></div><div class="swatch" style="background:#8b5fbf"></div>
+</div>
+<div class="dock">
+<div class="dock-item"><div class="dock-circ">Pn</div><div class="dock-label">Pencil</div></div>
+<div class="dock-item dock-active"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+</div>
+</div>
+
+<div class="pad-frame">
+<div class="screen-title">Powers</div>
+<div class="mic-btn">Mic</div>
+<div class="pad-canvas">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="95" cy="68" r="20" fill="#fff" stroke="#e3402a" stroke-width="2" stroke-dasharray="3 3"/>
+<text x="95" y="72" font-size="9" text-anchor="middle" font-family="Kalam" fill="#a02a18">3 slots</text>
+</svg>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px">
+<span class="power-chip on">Water</span><span class="power-chip">Fire</span><span class="power-chip on">Venom</span><span class="power-chip">Wind</span><span class="power-chip on">Electric</span><span class="power-chip">Strong</span><span class="power-chip">Animal</span>
+</div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:4px">pick exactly 3 &mdash; power is split evenly</div>
+<div class="dock">
+<div class="dock-item"><div class="dock-circ">Pn</div><div class="dock-label">Pencil</div></div>
+<div class="dock-item"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item dock-active"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+</div>
+</div>
+
+<div class="pad-frame">
+<div class="screen-title">Shapes</div>
+<div class="mic-btn">Mic</div>
+<div class="pad-canvas">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<rect x="95" y="72" width="55" height="22" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+<rect x="93" y="60" width="14" height="18" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+<rect x="140" y="60" width="14" height="18" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+</svg>
+<div class="callout" style="bottom:4px;left:4px;width:130px">say "sit the couch on its back, drop the legs" &mdash; AI joins them</div>
+</div>
+<div class="tray">
+<div class="tray-item">Sofa</div><div class="tray-item">Tri</div><div class="tray-item">Hat</div><div class="tray-item">Box</div><div class="tray-item">+more</div>
+</div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:4px">library of objects &mdash; everything except animals</div>
+<div class="dock">
+<div class="dock-item"><div class="dock-circ">Pn</div><div class="dock-label">Pencil</div></div>
+<div class="dock-item"><div class="dock-circ">Br</div><div class="dock-label">Paint</div></div>
+<div class="dock-item"><div class="dock-circ">Pw</div><div class="dock-label">Powers</div></div>
+<div class="dock-item dock-active"><div class="dock-circ">Sh</div><div class="dock-label">Shapes</div></div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Guided step-by-step wizard</div>
+<div class="dv-card" style="display:flex;gap:20px;flex-wrap:wrap">
+
+<div class="pad-frame">
+<div class="stepper"><span class="on">1 Sketch</span><span>2 Paint</span><span>3 Powers</span><span>4 Decorate</span><span>5 Bring to life</span></div>
+<div class="pad-canvas" style="margin-top:6px">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="110" y1="110" x2="112" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="130" y1="100" x2="136" y2="128" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+</svg>
+</div>
+<div style="display:flex;justify-content:flex-end;margin-top:10px"><span class="power-chip on">Next &rarr;</span></div>
+</div>
+
+<div class="pad-frame">
+<div class="stepper"><span>1 Sketch</span><span class="on">2 Paint</span><span>3 Powers</span><span>4 Decorate</span><span>5 Bring to life</span></div>
+<div class="pad-canvas" style="margin-top:6px">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#4a90c4" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="110" y1="110" x2="112" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="130" y1="100" x2="136" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+</svg>
+</div>
+<div class="swatch-row"><div class="swatch" style="background:#4a90c4"></div><div class="swatch" style="background:#f0b25b"></div><div class="swatch" style="background:#5ea86a"></div><div class="swatch" style="background:#c65a5a"></div></div>
+<div style="font-size:9px;text-align:center;color:rgba(26,26,26,.6);margin-top:4px">spills outside the lines auto-fix</div>
+<div style="display:flex;justify-content:space-between;margin-top:8px"><span class="power-chip">&larr; Back</span><span class="power-chip on">Next &rarr;</span></div>
+</div>
+
+<div class="pad-frame">
+<div class="stepper"><span>1 Sketch</span><span>2 Paint</span><span class="on">3 Powers</span><span>4 Decorate</span><span>5 Bring to life</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:14px">
+<span class="power-chip on">Water</span><span class="power-chip">Fire</span><span class="power-chip on">Venom</span><span class="power-chip">Wind</span><span class="power-chip on">Electric</span><span class="power-chip">Strong</span><span class="power-chip">Animal</span>
+</div>
+<div style="text-align:center;font-size:9px;color:rgba(26,26,26,.6);margin-top:8px">choose exactly 3 &mdash; equal power each</div>
+<div style="display:flex;justify-content:space-between;margin-top:34px"><span class="power-chip">&larr; Back</span><span class="power-chip on">Next &rarr;</span></div>
+</div>
+
+<div class="pad-frame">
+<div class="stepper"><span>1 Sketch</span><span>2 Paint</span><span>3 Powers</span><span class="on">4 Decorate</span><span>5 Bring to life</span></div>
+<div class="pad-canvas" style="margin-top:6px">
+<svg width="150" height="120" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#4a90c4" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<rect x="95" y="72" width="55" height="22" rx="4" fill="#c9c2b4" stroke="#1a1a1a" stroke-width="2"/>
+</svg>
+</div>
+<div class="tray"><div class="tray-item">Sofa</div><div class="tray-item">Tri</div><div class="tray-item">Hat</div><div class="tray-item">+more</div></div>
+<div style="display:flex;justify-content:space-between;margin-top:8px"><span class="power-chip">&larr; Back</span><span class="power-chip on">Next &rarr;</span></div>
+</div>
+
+<div class="pad-frame">
+<div class="stepper"><span>1 Sketch</span><span>2 Paint</span><span>3 Powers</span><span>4 Decorate</span><span class="on">5 Bring to life</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;margin-top:16px;gap:8px">
+<div style="width:56px;height:56px;border-radius:50%;border:3px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font:700 12px 'Kalam',cursive">Mic</div>
+<div class="callout" style="position:static;width:200px;text-align:center">"make the couch's legs disappear and sit it on its back"</div>
+</div>
+<div style="display:flex;justify-content:center;margin-top:14px"><span class="power-chip on">Done &check;</span></div>
+</div>
+
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Persistent workspace: tool rail + shelf</div>
+<div class="dv-card" style="display:flex;gap:20px;flex-wrap:wrap">
+
+<div class="pad-frame" style="width:400px">
+<div class="screen-title">Workspace</div>
+<div style="display:flex;gap:10px">
+<div style="display:flex;flex-direction:column;gap:8px;padding-top:4px">
+<div class="dock-circ" style="border-color:#e3402a;background:#fdeae6;color:#e3402a">Pn</div>
+<div class="dock-circ">Br</div>
+<div class="dock-circ">Pw</div>
+<div class="dock-circ">Sh</div>
+</div>
+<div style="flex:1">
+<div class="pad-canvas" style="height:150px">
+<svg width="140" height="110" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<line x1="55" y1="105" x2="50" y2="130" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+<line x1="80" y1="112" x2="78" y2="132" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+</svg>
+</div>
+<div class="tray" style="margin-top:8px"><div class="tray-item">Sofa</div><div class="tray-item">Tri</div><div class="tray-item">Hat</div><div class="tray-item">Box</div></div>
+</div>
+</div>
+<div class="mic-btn">Mic</div>
+<div style="font-size:9px;color:rgba(26,26,26,.6);margin-top:6px">rail (left) and shelf (bottom) stay put &mdash; jump between tools any time, any order</div>
+</div>
+
+<div class="pad-frame" style="width:400px">
+<div class="screen-title">Powers panel + AI listening</div>
+<div style="display:flex;gap:10px">
+<div style="display:flex;flex-direction:column;gap:8px;padding-top:4px">
+<div class="dock-circ">Pn</div>
+<div class="dock-circ">Br</div>
+<div class="dock-circ" style="border-color:#e3402a;background:#fdeae6;color:#e3402a">Pw</div>
+<div class="dock-circ">Sh</div>
+</div>
+<div style="flex:1;display:flex;gap:8px">
+<div class="pad-canvas" style="height:150px;width:60%">
+<svg width="120" height="100" viewBox="0 0 180 140">
+<path d="M40 90 Q20 60 45 40 Q70 15 110 20 Q150 25 155 60 Q160 90 130 105 Q100 120 70 115 Q45 112 40 90 Z" fill="#f0b25b" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="95" cy="68" r="16" fill="#fff" stroke="#e3402a" stroke-width="2" stroke-dasharray="3 3"/>
+</svg>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px;justify-content:center">
+<span class="power-chip on" style="font-size:9px">Water</span><span class="power-chip" style="font-size:9px">Fire</span><span class="power-chip on" style="font-size:9px">Venom</span><span class="power-chip" style="font-size:9px">Wind</span>
+</div>
+</div>
+</div>
+<div class="mic-btn" style="background:#fdeae6;border-color:#e3402a">&#9834;</div>
+<div class="callout" style="position:static;margin-top:8px;width:250px">listening: "join these two so the cow sits on the couch"</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "walk through <a class="dv-oid" href="#1c">1c</a>'s powers panel in more detail" &middot; "combine the wizard flow of <a class="dv-oid" href="#1b">1b</a> with the dock of <a class="dv-oid" href="#1a">1a</a>" &middot; "show the hold-to-undo gesture as its own screen"</p>
+</section>
+
+</x-dc>
+</body>
+</html>
