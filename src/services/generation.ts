@@ -33,9 +33,22 @@ export async function generateCreature(draft: CreatureDraft): Promise<Generation
   })
 
   const body = await response.json().catch(() => null)
-  if (!response.ok || !body?.image) {
+  if (!response.ok) {
     throw new Error(body?.error ?? `Generator failed (${response.status})`)
   }
+
+  // The worker returns a null image when Claude read the drawing but the
+  // image step failed (billing, quota, an outage). Rather than dead-end a
+  // child, show their own artwork alongside the name Claude gave it.
+  if (!body?.image) {
+    if (body?.imageError) console.error('image generation failed:', body.imageError)
+    return {
+      image: renderDraft(draft).toDataURL('image/png'),
+      description: body?.description ?? '',
+      creatureName: body?.creatureName ?? '',
+    }
+  }
+
   return {
     image: body.image,
     description: body.description ?? '',

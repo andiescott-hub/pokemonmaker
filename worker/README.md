@@ -64,6 +64,19 @@ API error appears in that log.
 
 ---
 
+## Gemini image generation needs billing enabled
+
+The Gemini **API** has no free tier for current image models. A key without
+billing returns `429 … limit: 0`, which reads like a used-up quota but
+actually means "not available on this plan". Enable billing on the Google AI
+Studio project behind `GEMINI_API_KEY` and it works with no code change.
+(The free images in the consumer Gemini app are a separate product.)
+
+If the image step fails for any reason, the worker still returns Claude's
+name and description with `image: null`, and the app shows the child's own
+drawing instead. They always get a finished creature; the underlying error
+goes to the browser console for you, not to them.
+
 ## Cost and abuse
 
 Each creature is roughly one Claude vision call plus one Gemini image — a

@@ -181,10 +181,22 @@ export default {
     const imageBase64 = body.image.replace(/^data:image\/\w+;base64,/, '')
     const powers = Array.isArray(body.powers) ? body.powers.map(String) : []
 
+    let analysis: CreatureAnalysis
     try {
-      const analysis = await analyseDrawing(env, imageBase64, powers)
-      const prompt = buildImagePrompt(analysis, powers)
-      const image = await generateImage(env, prompt, imageBase64)
+      analysis = await analyseDrawing(env, imageBase64, powers)
+    } catch (error) {
+      // Without the analysis there is nothing useful to return.
+      const message = error instanceof Error ? error.message : String(error)
+      console.error('analysis failed:', message)
+      return json(env, { error: message }, 502)
+    }
+
+    // The image step is allowed to fail. A child should still get their
+    // creature named and described rather than a dead end, and we have
+    // already paid for the analysis. The app falls back to compositing
+    // their own drawing when `image` is null.
+    try {
+      const image = await generateImage(env, buildImagePrompt(analysis, powers), imageBase64)
       return json(env, {
         creatureName: analysis.creatureName,
         description: analysis.description,
@@ -192,8 +204,13 @@ export default {
       })
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      console.error('generate failed:', message)
-      return json(env, { error: message }, 502)
+      console.error('image generation failed:', message)
+      return json(env, {
+        creatureName: analysis.creatureName,
+        description: analysis.description,
+        image: null,
+        imageError: message,
+      })
     }
   },
 }
