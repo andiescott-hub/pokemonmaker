@@ -58,10 +58,8 @@ jobs:
       - name: Next step
         run: |
           echo "───────────────────────────────────────────────────────────"
-          echo "Deployed. Find the worker URL just above — it looks like:"
-          echo "    https://creature-maker.<something>.workers.dev"
+          echo "Deployed. The app already points at this worker — the URL is"
+          echo "set in .github/workflows/deploy.yml. Nothing else to do."
           echo
-          echo "Copy it, then set it as a repository VARIABLE named"
-          echo "VITE_GENERATOR_URL (Settings → Secrets and variables →"
-          echo "Actions → Variables tab). The app picks it up on the next push."
+          echo "To check it end to end, run the 'Test worker' workflow."
           echo "───────────────────────────────────────────────────────────"
