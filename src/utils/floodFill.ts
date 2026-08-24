@@ -91,12 +91,83 @@ export function floodFill(
   return { region, leaked, filledPixels }
 }
 
-/** Gap-closing radii tried in order until the fill no longer leaks. */
-const CORRECTION_RADII = [2, 4, 8]
+/** Gap-closing radii tried in order, smallest first. 0 = no closing at all,
+ * which is exact for an already-closed outline. The largest closes gaps of
+ * roughly 2x its value. The largest handles a mouth left wide open across
+ * a big drawing — measured at ~35ms on a full-size canvas, and only
+ * reached when every smaller radius has failed. */
+const CORRECTION_RADII = [0, 2, 4, 8, 14, 20, 28, 40]
+
+const countSet = (mask: Uint8Array): number => {
+  let n = 0
+  for (let i = 0; i < mask.length; i++) if (mask[i]) n++
+  return n
+}
 
 /**
- * Spill-corrected fill: flood fill with progressively stronger gap-closing;
- * a fill that still escapes to the canvas border paints nothing.
+ * Find a fillable pixel near the seed, searching only through the region
+ * the child actually tapped in — it never crosses one of their strokes.
+ *
+ * This matters: closing gaps thickens the outline and can swallow a tap
+ * made near a line. Recovering by simple proximity would let a tap in the
+ * background jump *through* the outline and flood the creature's inside,
+ * so the walk is confined by the original strokes.
+ */
+function nearestFreeInSameRegion(
+  barriers: Uint8Array,
+  closed: Uint8Array,
+  { width, height }: MaskSize,
+  seedX: number,
+  seedY: number,
+  maxSteps: number,
+): [number, number] | null {
+  const start = seedY * width + seedX
+  if (barriers[start]) return null // tapped directly on a line
+  if (!closed[start]) return [seedX, seedY]
+
+  const seen = new Uint8Array(width * height)
+  const queue = new Int32Array(width * height)
+  let head = 0
+  let tail = 0
+  let steps = 0
+  let levelEnd = 1
+  queue[tail++] = start
+  seen[start] = 1
+
+  while (head < tail && steps <= maxSteps) {
+    const idx = queue[head++]
+    if (!closed[idx]) return [idx % width, (idx / width) | 0]
+    const x = idx % width
+    const y = (idx / width) | 0
+    if (x > 0) push(idx - 1)
+    if (x < width - 1) push(idx + 1)
+    if (y > 0) push(idx - width)
+    if (y < height - 1) push(idx + width)
+    if (head === levelEnd) {
+      steps++
+      levelEnd = tail
+    }
+  }
+  return null
+
+  function push(n: number) {
+    if (!seen[n] && !barriers[n]) {
+      seen[n] = 1
+      queue[tail++] = n
+    }
+  }
+}
+
+/**
+ * Spill-corrected fill: a morphological closing.
+ *
+ * Thickening the outline closes gaps so paint can't escape through an open
+ * mouth or a join between a leg and a body — but it also eats into the
+ * fill. So after a successful fill the region is grown back by the same
+ * radius and clipped to the real strokes, which restores the lost margin
+ * without painting over the child's lines.
+ *
+ * Only if every radius still leaks does it paint nothing.
  */
 export function correctedFill(
   barriers: Uint8Array,
@@ -104,11 +175,22 @@ export function correctedFill(
   seedX: number,
   seedY: number,
 ): FloodResult {
-  let last: FloodResult = { region: new Uint8Array(size.width * size.height), leaked: false, filledPixels: 0 }
+  const sx = Math.round(seedX)
+  const sy = Math.round(seedY)
+
   for (const radius of CORRECTION_RADII) {
-    const closed = dilate(barriers, size, radius)
-    last = floodFill(closed, size, seedX, seedY)
-    if (!last.leaked) return last
+    const closed = radius === 0 ? barriers : dilate(barriers, size, radius)
+    const seed = nearestFreeInSameRegion(barriers, closed, size, sx, sy, radius * 3)
+    if (!seed) continue
+
+    const result = floodFill(closed, size, seed[0], seed[1])
+    if (result.leaked || result.filledPixels === 0) continue
+    if (radius === 0) return result
+
+    const grown = dilate(result.region, size, radius)
+    for (let i = 0; i < grown.length; i++) if (barriers[i]) grown[i] = 0
+    return { region: grown, leaked: false, filledPixels: countSet(grown) }
   }
+
   return { region: new Uint8Array(size.width * size.height), leaked: true, filledPixels: 0 }
 }

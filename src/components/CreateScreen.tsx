@@ -115,6 +115,9 @@ export function CreateScreen() {
         </div>
       )}
 
+      {/* No toolbar in Finish mode — reserving its height squeezed the
+          result and pushed the actions under the dock. */}
+      {mode !== 'finish' && (
       <div className="toolbar-area">
         {mode === 'paint' && <PaintTools color={paintColor} onPick={setPaintColor} />}
         {mode === 'powers' && <PowersPanel />}
@@ -125,6 +128,7 @@ export function CreateScreen() {
           />
         )}
       </div>
+      )}
 
       <ModeDock />
 

@@ -234,6 +234,7 @@ button {
 /* ── Toolbars ──────────────────────────────────────────────────────── */
 .toolbar-area {
   min-height: 74px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -448,12 +449,23 @@ button {
 }
 
 /* ── Finish ────────────────────────────────────────────────────────── */
+/* Scrolls internally rather than spilling past its container — overflow
+   here used to be painted over by the mode dock, which silently swallowed
+   taps on Regenerate and Submit. `margin: auto` on the children centres
+   them when there is room and lets them scroll when there isn't (safer
+   than align-items:center, which makes overflow unreachable). */
 .finish-screen {
   flex: 1;
   min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.finish-screen > * {
+  margin: auto;
 }
 
 .finish-gate {
@@ -495,7 +507,7 @@ button {
 .result-frame img {
   display: block;
   width: 100%;
-  max-height: 52vh;
+  max-height: 40vh;
   object-fit: contain;
   background: #fff;
 }

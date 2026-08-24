@@ -68,4 +68,37 @@ describe('correctedFill (spill correction)', () => {
     const corrected = correctedFill(rectOutline(), size, 1, 1)
     expect(corrected.filledPixels).toBe(0)
   })
+
+  it('fills a shape with a wide gap, like an open mouth', () => {
+    // A 20px hole is far too wide for small gap-closing, and was the
+    // real-world failure: a drawn crocodile with its mouth open painted
+    // nothing at all.
+    const wideOpen = new Uint8Array(W * H)
+    for (let x = 5; x <= 34; x++) {
+      wideOpen[5 * W + x] = 1
+      wideOpen[34 * W + x] = 1
+    }
+    for (let y = 5; y <= 34; y++) {
+      if (y < 12 || y > 27) wideOpen[y * W + 5] = 1 // 16px gap in the left wall
+      wideOpen[y * W + 34] = 1
+    }
+    expect(floodFill(wideOpen, size, 20, 20).leaked).toBe(true)
+
+    const corrected = correctedFill(wideOpen, size, 20, 20)
+    expect(corrected.leaked).toBe(false)
+    expect(corrected.filledPixels).toBeGreaterThan(500)
+    expect(corrected.region[1 * W + 1]).toBe(0) // no escape to the background
+  })
+
+  it('gives back the margin that gap-closing eats, and never paints over a stroke', () => {
+    const gappy = rectOutline({ x: 20, y: 5 })
+    const corrected = correctedFill(gappy, size, 20, 20)
+    const exact = floodFill(rectOutline(), size, 20, 20).filledPixels
+
+    // Within a few percent of the true interior — not eroded by the
+    // thickened barrier used to close the gap.
+    expect(corrected.filledPixels).toBeGreaterThan(exact * 0.95)
+    // The child's own lines stay visible underneath.
+    for (let x = 5; x <= 34; x++) expect(corrected.region[5 * W + x]).toBe(0)
+  })
 })
