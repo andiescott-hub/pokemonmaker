@@ -1,0 +1,67 @@
+name: Deploy worker
+
+# Deploys the creature-generation worker (Claude vision + Gemini image) to
+# Cloudflare, and uploads its API keys as Worker secrets.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN   Cloudflare → My Profile → API Tokens →
+#                          "Edit Cloudflare Workers" template
+#   ANTHROPIC_API_KEY      console.anthropic.com
+#   GEMINI_API_KEY         aistudio.google.com/apikey
+#   ACCESS_CODE            any phrase you invent
+
+on:
+  push:
+    branches: [main, claude/setup-for-building-twtvay]
+    paths:
+      - 'worker/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the Cloudflare token is set
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not set."
+            echo "Add it under Settings → Secrets and variables → Actions → New repository secret."
+            echo "Create the token at Cloudflare → My Profile → API Tokens → 'Edit Cloudflare Workers'."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+        working-directory: worker
+
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: worker
+          # Uploads these to the Worker as encrypted secrets.
+          secrets: |
+            ANTHROPIC_API_KEY
+            GEMINI_API_KEY
+            ACCESS_CODE
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
+
+      - name: Next step
+        run: |
+          echo "───────────────────────────────────────────────────────────"
+          echo "Deployed. Find the worker URL just above — it looks like:"
+          echo "    https://creature-maker.<something>.workers.dev"
+          echo
+          echo "Copy it, then set it as a repository VARIABLE named"
+          echo "VITE_GENERATOR_URL (Settings → Secrets and variables →"
+          echo "Actions → Variables tab). The app picks it up on the next push."
+          echo "───────────────────────────────────────────────────────────"

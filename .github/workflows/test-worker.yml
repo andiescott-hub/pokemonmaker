@@ -1,0 +1,40 @@
+name: Test worker
+
+# Sends a test drawing to the deployed worker and prints what came back.
+# Run it from the Actions tab — no terminal needed. If the Claude or Gemini
+# call is misconfigured, the exact API error appears in this log.
+
+on:
+  workflow_dispatch:
+    inputs:
+      worker_url:
+        description: 'Worker URL (leave blank to use the VITE_GENERATOR_URL variable)'
+        required: false
+        type: string
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Send a test drawing to the worker
+        env:
+          INPUT_URL: ${{ inputs.worker_url }}
+          VAR_URL: ${{ vars.VITE_GENERATOR_URL }}
+          ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
+        run: |
+          URL="${INPUT_URL:-$VAR_URL}"
+          if [ -z "$URL" ]; then
+            echo "::error::No worker URL. Either set the VITE_GENERATOR_URL repository variable, or type the URL into the 'Worker URL' box when running this workflow."
+            exit 1
+          fi
+          if [ -z "$ACCESS_CODE" ]; then
+            echo "::error::ACCESS_CODE secret is not set. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          echo "Testing $URL"
+          node worker/test-local.mjs "$URL" "$ACCESS_CODE"

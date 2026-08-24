@@ -30,11 +30,14 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
-          # Set these as repository variables to point the app at your
-          # generation worker (Settings → Secrets and variables → Actions).
-          # Unset = the app uses its offline preview generator.
+          # Point the app at your generation worker. Unset = the app falls
+          # back to its offline preview generator, so builds never break.
+          # VITE_GENERATOR_URL is a repository VARIABLE (the worker URL).
+          # The access code is read from the same ACCESS_CODE secret the
+          # worker uses, so it is only ever set in one place. Note it ends
+          # up in the public JS bundle — see worker/README.md.
           VITE_GENERATOR_URL: ${{ vars.VITE_GENERATOR_URL }}
-          VITE_ACCESS_CODE: ${{ vars.VITE_ACCESS_CODE }}
+          VITE_ACCESS_CODE: ${{ secrets.ACCESS_CODE }}
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
