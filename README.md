@@ -11,6 +11,13 @@ full-screen on an iPad from Safari's *Add to Home Screen* — no App Store
 needed. The original design handoff (wireframes + spec) lives in
 [`design/`](design/README.md).
 
+## Try it on an iPad
+
+The app deploys automatically to **https://andiescott-hub.github.io/pokemonmaker/**
+on every push (see `.github/workflows/deploy.yml`). On the iPad, open that
+URL in Safari, then **Share → Add to Home Screen** — it launches
+full-screen like a native app, with mic access (HTTPS) and offline support.
+
 ## Run it
 
 ```bash

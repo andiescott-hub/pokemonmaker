@@ -10,7 +10,7 @@ import { chromium } from 'playwright-core'
 import { spawn } from 'node:child_process'
 
 const PORT = 4173
-const BASE = `http://localhost:${PORT}`
+const BASE = `http://localhost:${PORT}/pokemonmaker/` // matches the vite `base` (GitHub Pages path)
 const EXECUTABLE = process.env.CHROMIUM_PATH ?? '/opt/pw-browsers/chromium'
 
 function fail(message) {
