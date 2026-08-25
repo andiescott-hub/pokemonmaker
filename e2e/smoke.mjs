@@ -140,6 +140,43 @@ try {
   await page.waitForSelector('[data-testid="placed-sofa"]')
   console.log('✓ rubber: removes a placed object')
 
+  // 5b. Resize: tap the sofa to select it, drag its handle out, then step
+  // it back down with the minus button.
+  const sofaWidth = async () => (await page.locator('[data-testid="placed-sofa"]').boundingBox()).width
+  await page.click('[data-testid="placed-sofa"]')
+  await page.waitForSelector('[data-testid="resize-handle"]')
+  const beforeDrag = await sofaWidth()
+
+  const handle = await page.locator('[data-testid="resize-handle"]').boundingBox()
+  const sofaBox = await page.locator('[data-testid="placed-sofa"]').boundingBox()
+  const centre = { x: sofaBox.x + sofaBox.width / 2, y: sofaBox.y + sofaBox.height / 2 }
+  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2)
+  await page.mouse.down()
+  // Drag to twice the distance from the shape's centre — twice the size.
+  await page.mouse.move(centre.x + (handle.x + handle.width / 2 - centre.x) * 2, centre.y + (handle.y + handle.height / 2 - centre.y) * 2, { steps: 8 })
+  await page.mouse.up()
+  const afterDrag = await sofaWidth()
+  if (afterDrag < beforeDrag * 1.5) fail(`handle drag barely resized: ${beforeDrag} -> ${afterDrag}`)
+
+  await page.click('[data-testid="shrink-object"]')
+  const afterShrink = await sofaWidth()
+  if (afterShrink >= afterDrag) fail(`minus button did not shrink the object: ${afterDrag} -> ${afterShrink}`)
+
+  // Dragging the shape itself still moves it rather than resizing it.
+  const movedFrom = await page.locator('[data-testid="placed-sofa"]').boundingBox()
+  await page.mouse.move(movedFrom.x + movedFrom.width / 2, movedFrom.y + movedFrom.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(movedFrom.x + movedFrom.width / 2 + 60, movedFrom.y + movedFrom.height / 2, { steps: 5 })
+  await page.mouse.up()
+  const movedTo = await page.locator('[data-testid="placed-sofa"]').boundingBox()
+  if (Math.abs(movedTo.width - movedFrom.width) > 2) fail('moving the object changed its size')
+  if (movedTo.x - movedFrom.x < 30) fail('object did not move when dragged')
+
+  // A tap on empty canvas puts the controls away.
+  await page.mouse.click(box.x + 30, box.y + box.height - 30)
+  if ((await page.locator('[data-testid="resize-controls"]').count()) !== 0) fail('controls stayed after tapping away')
+  console.log('✓ shapes: handle drag and minus button resize; dragging still moves; tapping away deselects')
+
   // 6. Finish: generate (stub) and submit.
   await page.click('[data-testid="dock-finish"]')
   await page.click('[data-testid="generate-button"]')

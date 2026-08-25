@@ -12,7 +12,9 @@ interface ShapesTrayProps {
 export function ShapesTray({ onPickUp, onBrowse }: ShapesTrayProps) {
   return (
     <div className="shapes-tray" data-testid="shapes-tray">
-      <span className="toolbar-hint">Drag an object onto your creature — objects only, no animals.</span>
+      <span className="toolbar-hint">
+        Drag an object onto your creature, then tap it to make it bigger or smaller — objects only, no animals.
+      </span>
       <div className="tray-row">
         {QUICK_PICKS.map((obj) => (
           <button

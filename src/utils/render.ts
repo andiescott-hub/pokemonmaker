@@ -11,6 +11,17 @@ export const STROKE_WIDTH = 4
 /** On-canvas size of a placed library object, before its own scale. */
 export const OBJECT_SIZE = 64
 
+/** How far a placed object can be resized. The floor keeps a shape big
+ * enough to still be tappable; the ceiling keeps one object from covering
+ * the whole creature. */
+export const MIN_SCALE = 0.4
+export const MAX_SCALE = 4
+
+/** One clamp shared by the resize handle, the +/- buttons and the tests,
+ * so no two paths can disagree about the limits. */
+export const clampScale = (scale: number): number =>
+  Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale))
+
 export const strokePath = (stroke: Stroke): string =>
   stroke.points.length === 1
     ? `M ${stroke.points[0].x} ${stroke.points[0].y} l 0.01 0`

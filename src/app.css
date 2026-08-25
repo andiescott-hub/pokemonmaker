@@ -212,6 +212,42 @@ button {
   filter: saturate(1.2);
 }
 
+/* Resize controls for the selected shape. The ring is decoration only —
+   taps must fall through it to the shape underneath. */
+.resize-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+  pointer-events: none;
+}
+
+.resize-handle {
+  fill: var(--accent);
+  stroke: #fff;
+  stroke-width: 3;
+  cursor: nwse-resize;
+}
+
+.resize-button circle {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.resize-button text {
+  font-size: 30px;
+  font-weight: 700;
+  fill: var(--accent);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* At the size limit — still tappable, just visibly out of road. */
+.resize-button.spent {
+  opacity: 0.35;
+}
+
 .power-hotspot .hotspot-ring {
   fill: var(--accent-soft);
   fill-opacity: 0.6;
