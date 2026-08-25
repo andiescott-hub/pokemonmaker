@@ -8,6 +8,9 @@ export const CANVAS_H = 600
 
 export const STROKE_WIDTH = 4
 
+/** On-canvas size of a placed library object, before its own scale. */
+export const OBJECT_SIZE = 64
+
 export const strokePath = (stroke: Stroke): string =>
   stroke.points.length === 1
     ? `M ${stroke.points[0].x} ${stroke.points[0].y} l 0.01 0`
@@ -125,10 +128,20 @@ export function renderDraft(draft: CreatureDraft): HTMLCanvasElement {
   for (const placed of draft.objects) {
     const obj = objectById(placed.objectId)
     if (!obj) continue
+    const size = OBJECT_SIZE * placed.scale
     ctx.save()
-    ctx.font = `${64 * placed.scale}px serif`
     if (placed.merged) ctx.globalAlpha = 0.85
-    ctx.fillText(obj.emoji, placed.position.x, placed.position.y)
+    if (obj.path) {
+      // Same 0-100 path the canvas and pickers draw, so what the child sees
+      // is exactly what Claude is sent.
+      ctx.translate(placed.position.x - size / 2, placed.position.y - size / 2)
+      ctx.scale(size / 100, size / 100)
+      ctx.fillStyle = '#1f1d1a'
+      ctx.fill(new Path2D(obj.path))
+    } else {
+      ctx.font = `${size}px serif`
+      ctx.fillText(obj.emoji, placed.position.x, placed.position.y)
+    }
     ctx.restore()
   }
   return canvas

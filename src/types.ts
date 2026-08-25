@@ -38,7 +38,14 @@ export interface Power {
 /** Exactly this many powers must be selected before a creature can be finished. */
 export const REQUIRED_POWERS = 3
 
-export type ObjectCategoryId = 'furniture' | 'everyday' | 'nature' | 'shapes'
+export type ObjectCategoryId =
+  | 'parts'
+  | 'elements'
+  | 'gear'
+  | 'nature'
+  | 'furniture'
+  | 'everyday'
+  | 'shapes'
 
 /** An object in the Shapes library. `keywords` power description-based
  * search ("something to sit on" → sofa). Never contains animals. */
@@ -48,6 +55,12 @@ export interface LibraryObject {
   category: ObjectCategoryId
   emoji: string
   keywords: string[]
+  /**
+   * Optional SVG path in a 0-100 box, drawn instead of the emoji. Needed
+   * because no emoji exists for a horn, tail, fin, claw or spike — the
+   * nearest candidates are whole animals, which the library never contains.
+   */
+  path?: string
 }
 
 /** An object the user has dragged onto the creature. */

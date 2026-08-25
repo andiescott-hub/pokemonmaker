@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { LIBRARY_OBJECTS, OBJECT_CATEGORIES, searchObjects } from '../data/objects'
 import type { LibraryObject } from '../types'
 import { MicButton } from './MicButton'
+import { ObjectShape } from './ObjectShape'
 
 interface ObjectLibraryProps {
   onSelect: (obj: LibraryObject) => void
@@ -77,7 +78,7 @@ export function ObjectLibrary({ onSelect, onClose }: ObjectLibraryProps) {
 function ObjectCard({ obj, onSelect }: { obj: LibraryObject; onSelect: (obj: LibraryObject) => void }) {
   return (
     <button className="object-card" onClick={() => onSelect(obj)} data-testid={`object-${obj.id}`}>
-      <span className="object-emoji">{obj.emoji}</span>
+      <ObjectShape obj={obj} size={32} />
       <span className="object-name">{obj.name}</span>
     </button>
   )

@@ -766,3 +766,13 @@ button {
   color: var(--ink-soft);
   margin-top: 8px;
 }
+
+/* Vector library objects (wings, horns, spikes…) — drawn rather than emoji,
+   since no emoji exists for them that isn't a whole animal. */
+.object-vector path {
+  fill: var(--ink);
+}
+
+.creature-canvas .placed-object-vector path {
+  fill: var(--ink);
+}

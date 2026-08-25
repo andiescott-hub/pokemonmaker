@@ -10,6 +10,8 @@ import { FinishScreen } from './FinishScreen'
 import type { LibraryObject } from '../types'
 import { CANVAS_W, CANVAS_H } from '../utils/render'
 
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+
 interface DragState {
   obj: LibraryObject
   x: number
@@ -71,8 +73,20 @@ export function CreateScreen() {
     }
   }, [drag?.obj, placeObject]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  /**
+   * Place a library pick near the middle, stepping each new one around a
+   * small spiral. Dropping every object on the exact centre meant adding
+   * wings, then horns, then a flame left only the flame visible.
+   * (Dragging from the tray uses the drop point and is unaffected.)
+   */
   const addFromLibrary = (obj: LibraryObject) => {
-    placeObject(obj.id, { x: CANVAS_W / 2, y: CANVAS_H / 2 })
+    const n = useAppStore.getState().draft.objects.length
+    const angle = n * 2.4 // radians — a loose spiral, not a ring
+    const radius = n === 0 ? 0 : 60 + n * 14
+    placeObject(obj.id, {
+      x: clamp(CANVAS_W / 2 + Math.cos(angle) * radius, 60, CANVAS_W - 60),
+      y: clamp(CANVAS_H / 2 + Math.sin(angle) * radius, 60, CANVAS_H - 60),
+    })
     setLibraryOpen(false)
   }
 

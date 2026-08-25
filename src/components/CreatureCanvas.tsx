@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useAppStore } from '../store'
-import { CANVAS_W, CANVAS_H, STROKE_WIDTH, fillIdAtPoint, renderFillLayer, strokePath } from '../utils/render'
+import { CANVAS_W, CANVAS_H, OBJECT_SIZE, STROKE_WIDTH, fillIdAtPoint, renderFillLayer, strokePath } from '../utils/render'
 import { objectById } from '../data/objects'
 import { REQUIRED_POWERS, type Point, type Stroke } from '../types'
 
@@ -255,27 +255,46 @@ export function CreatureCanvas({ svgRef, paintColor, eraser }: CreatureCanvasPro
       {draft.objects.map((placed) => {
         const obj = objectById(placed.objectId)
         if (!obj) return null
+        const size = OBJECT_SIZE * placed.scale
+        const className = `placed-object${placed.merged ? ' merged' : ''}`
+        const onPointerDown = (e: React.PointerEvent) => {
+          if (eraser) {
+            e.stopPropagation()
+            removeObject(placed.id)
+            return
+          }
+          if (mode !== 'shapes') return
+          e.stopPropagation()
+          svgRef.current?.setPointerCapture(e.pointerId)
+          draggingObject.current = placed.id
+          downPoint.current = placed.position
+        }
+
+        // Vector parts (wings, horns, spikes…) draw their path; everything
+        // else is an emoji glyph. Paths are authored in a 0-100 box.
+        if (obj.path) {
+          return (
+            <g
+              key={placed.id}
+              className={`${className} placed-object-vector`}
+              transform={`translate(${placed.position.x - size / 2} ${placed.position.y - size / 2}) scale(${size / 100})`}
+              onPointerDown={onPointerDown}
+              data-testid={`placed-${obj.id}`}
+            >
+              <path d={obj.path} />
+            </g>
+          )
+        }
         return (
           <text
             key={placed.id}
             x={placed.position.x}
             y={placed.position.y}
-            fontSize={64 * placed.scale}
+            fontSize={size}
             textAnchor="middle"
             dominantBaseline="central"
-            className={`placed-object${placed.merged ? ' merged' : ''}`}
-            onPointerDown={(e) => {
-              if (eraser) {
-                e.stopPropagation()
-                removeObject(placed.id)
-                return
-              }
-              if (mode !== 'shapes') return
-              e.stopPropagation()
-              svgRef.current?.setPointerCapture(e.pointerId)
-              draggingObject.current = placed.id
-              downPoint.current = placed.position
-            }}
+            className={className}
+            onPointerDown={onPointerDown}
             data-testid={`placed-${obj.id}`}
           >
             {obj.emoji}
