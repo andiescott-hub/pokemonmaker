@@ -123,23 +123,42 @@ async function analyseDrawing(
   return JSON.parse(text.text) as CreatureAnalysis
 }
 
-/** Ask Gemini to render the finished creature, using the drawing as reference. */
+/**
+ * Ask Gemini to render the finished creature, using the drawing as
+ * reference. Retries once on a transient failure — a rate limit or a 5xx
+ * shouldn't cost a child their creature, and the paid tier's per-minute
+ * limit is easy to brush against when regenerating.
+ */
 async function generateImage(env: Env, prompt: string, imageBase64: string): Promise<string> {
-  const response = await fetch(`${GEMINI.endpoint(GEMINI.model)}?key=${env.GEMINI_API_KEY}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(GEMINI.body(prompt, imageBase64)),
-  })
+  const attempt = async (): Promise<string> => {
+    const response = await fetch(`${GEMINI.endpoint(GEMINI.model)}?key=${env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(GEMINI.body(prompt, imageBase64)),
+    })
 
-  const json = await response.json<any>()
-  if (!response.ok) {
-    throw new Error(`Gemini ${response.status}: ${JSON.stringify(json).slice(0, 600)}`)
+    const json = await response.json<any>()
+    if (!response.ok) {
+      const error = new Error(`Gemini ${response.status}: ${JSON.stringify(json).slice(0, 600)}`)
+      // 429 = rate limited, 5xx = their side. Both are worth one retry.
+      ;(error as { retryable?: boolean }).retryable = response.status === 429 || response.status >= 500
+      throw error
+    }
+    const image = GEMINI.extractImage(json)
+    if (!image) {
+      throw new Error(`Gemini returned no image. Response: ${JSON.stringify(json).slice(0, 600)}`)
+    }
+    return image
   }
-  const image = GEMINI.extractImage(json)
-  if (!image) {
-    throw new Error(`Gemini returned no image. Response: ${JSON.stringify(json).slice(0, 600)}`)
+
+  try {
+    return await attempt()
+  } catch (error) {
+    if (!(error as { retryable?: boolean }).retryable) throw error
+    console.warn('gemini transient failure, retrying once:', (error as Error).message)
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    return attempt()
   }
-  return image
 }
 
 const corsHeaders = (env: Env) => ({

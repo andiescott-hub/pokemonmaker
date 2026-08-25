@@ -8,6 +8,14 @@ export interface GenerationResult {
   /** Claude's reading of what the child drew — shown back to them. */
   description: string
   creatureName: string
+  /**
+   * True only when an image model actually produced this picture. False
+   * when we fell back to the child's own drawing — the UI must not badge
+   * their artwork as AI generated.
+   */
+  aiGenerated: boolean
+  /** Why the image step failed, for diagnosis. Never shown to a child. */
+  imageError?: string
 }
 
 /**
@@ -46,6 +54,8 @@ export async function generateCreature(draft: CreatureDraft): Promise<Generation
       image: renderDraft(draft).toDataURL('image/png'),
       description: body?.description ?? '',
       creatureName: body?.creatureName ?? '',
+      aiGenerated: false,
+      imageError: body?.imageError ?? 'The image step returned nothing.',
     }
   }
 
@@ -53,6 +63,7 @@ export async function generateCreature(draft: CreatureDraft): Promise<Generation
     image: body.image,
     description: body.description ?? '',
     creatureName: body.creatureName ?? '',
+    aiGenerated: true,
   }
 }
 
@@ -89,6 +100,7 @@ async function offlinePreview(draft: CreatureDraft): Promise<GenerationResult> {
     image: canvas.toDataURL('image/png'),
     creatureName: 'Your creature',
     description: 'Offline preview — connect the generator to bring it fully to life.',
+    aiGenerated: false,
   }
 }
 

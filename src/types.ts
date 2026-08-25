@@ -87,6 +87,10 @@ export interface CreatureDraft {
   /** Claude's reading of what the child drew, shown back to them. */
   description: string
   creatureName: string
+  /** True only when an image model made the picture, not the child. */
+  aiGenerated: boolean
+  /** Why the image step failed. Diagnostic only — never child-facing. */
+  imageError: string
   regenerateCount: number
 }
 
@@ -98,6 +102,7 @@ export interface SubmittedCreature {
   submittedAt: number
   description: string
   creatureName: string
+  aiGenerated: boolean
 }
 
 export type CreateMode = 'sketch' | 'paint' | 'powers' | 'shapes' | 'finish'
@@ -112,5 +117,7 @@ export const emptyDraft = (): CreatureDraft => ({
   generatedImage: null,
   description: '',
   creatureName: '',
+  aiGenerated: false,
+  imageError: '',
   regenerateCount: 0,
 })

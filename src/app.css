@@ -525,6 +525,15 @@ button {
   border-radius: var(--radius-pill);
 }
 
+/* Shown when the image step failed and the child's own drawing stands in.
+   Honest, but quiet — not an error a kid needs to worry about. */
+.finish-note {
+  font-size: 13px;
+  color: var(--ink-soft);
+  opacity: 0.75;
+  text-align: center;
+}
+
 .finish-caption {
   font-size: 15px;
   color: var(--ink-soft);

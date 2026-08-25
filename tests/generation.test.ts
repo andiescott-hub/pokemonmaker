@@ -48,6 +48,10 @@ describe('generateCreature against a configured worker', () => {
     expect(result.creatureName).toBe('Couchback Tortoise')
     expect(result.description).toContain('couch')
     expect(result.image).toBe('data:image/png;base64,OWN-DRAWING')
+    // Crucially: this is the child's drawing, so the UI must not badge it
+    // as AI generated. The reason is kept for diagnosis.
+    expect(result.aiGenerated).toBe(false)
+    expect(result.imageError).toContain('quota')
   })
 
   it('uses the generated image when one comes back', async () => {
@@ -60,6 +64,7 @@ describe('generateCreature against a configured worker', () => {
     const result = await generateCreature(draft())
     expect(result.image).toBe('data:image/png;base64,AI-ART')
     expect(result.creatureName).toBe('Sparkfin')
+    expect(result.aiGenerated).toBe(true)
   })
 
   it('throws when the worker itself errors, so the UI can offer a retry', async () => {

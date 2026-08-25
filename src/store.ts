@@ -49,7 +49,13 @@ export interface AppState extends PersistedState {
   // Finish
   setGeneration: (
     status: CreatureDraft['generationStatus'],
-    result?: { image: string; description: string; creatureName: string },
+    result?: {
+      image: string
+      description: string
+      creatureName: string
+      aiGenerated: boolean
+      imageError?: string
+    },
   ) => void
   bumpRegenerate: () => void
   submitCreature: () => void
@@ -189,6 +195,8 @@ export const useAppStore = create<AppState>((set) => {
           generatedImage: result ? result.image : draft.generatedImage,
           description: result ? result.description : draft.description,
           creatureName: result ? result.creatureName : draft.creatureName,
+          aiGenerated: result ? result.aiGenerated : draft.aiGenerated,
+          imageError: result ? (result.imageError ?? '') : draft.imageError,
         },
       })),
 
@@ -206,6 +214,7 @@ export const useAppStore = create<AppState>((set) => {
           submittedAt: Date.now(),
           description: draft.description,
           creatureName: draft.creatureName,
+          aiGenerated: draft.aiGenerated,
         }
         // Submit locks the creature (handoff open question — current choice:
         // submitted creatures are read-only; a fresh draft starts).

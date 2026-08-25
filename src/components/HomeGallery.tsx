@@ -45,6 +45,7 @@ export function HomeGallery() {
             <div className="detail-meta">
               {open.creatureName && <h2 className="creature-name">{open.creatureName}</h2>}
               {open.description && <p className="detail-description">{open.description}</p>}
+              {!open.aiGenerated && <p className="finish-note">Your own drawing</p>}
               <div className="detail-powers">
                 {open.powers.map((id) => {
                   const power = POWERS.find((p) => p.id === id)

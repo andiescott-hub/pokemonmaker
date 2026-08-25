@@ -82,7 +82,9 @@ export function FinishScreen() {
       {draft.generationStatus === 'generated' && draft.generatedImage && (
         <div className="finish-result" data-testid="finish-result">
           <div className="result-frame">
-            <span className="ai-badge">AI generated</span>
+            {/* Only claim AI made this when it actually did — otherwise we
+                would be badging the child's own drawing as AI output. */}
+            {draft.aiGenerated && <span className="ai-badge">AI generated</span>}
             <img src={draft.generatedImage} alt="Your finished creature" />
           </div>
           {draft.creatureName && (
@@ -93,6 +95,11 @@ export function FinishScreen() {
           <p className="finish-caption" data-testid="creature-description">
             {draft.description || 'AI blended sketch, paint, shapes & powers into one finished creature.'}
           </p>
+          {!draft.aiGenerated && (
+            <p className="finish-note" data-testid="not-ai-note" title={draft.imageError}>
+              Couldn&apos;t paint it this time — here&apos;s your drawing.
+            </p>
+          )}
           <div className="finish-actions">
             <button className="secondary-button" onClick={() => generate(true)} data-testid="regenerate-button">
               Regenerate

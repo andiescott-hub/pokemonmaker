@@ -95,6 +95,7 @@ describe('submit', () => {
       image: 'data:image/png;base64,xxx',
       description: 'A round tortoise with a couch on its back.',
       creatureName: 'Couchback',
+      aiGenerated: true,
     })
   }
 
@@ -111,6 +112,7 @@ describe('submit', () => {
     // Claude's reading of the drawing travels with the creature into the gallery.
     expect(state().submitted[0].creatureName).toBe('Couchback')
     expect(state().submitted[0].description).toContain('couch on its back')
+    expect(state().submitted[0].aiGenerated).toBe(true)
     expect(state().draft.strokes).toHaveLength(0)
     expect(state().draft.generationStatus).toBe('idle')
   })
