@@ -610,19 +610,41 @@ button {
   -webkit-overflow-scrolling: touch;
 }
 
+/* 120px columns give a two-word creature name room to sit under its ball
+   without wrapping into a narrow column of single words. */
 .ball-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 100px);
-  gap: 26px;
+  grid-template-columns: repeat(auto-fill, 120px);
+  gap: 26px 18px;
   justify-content: center;
+  align-items: start;
   width: 100%;
   max-width: 900px;
 }
 
+/* Top-aligned, so names of different heights don't push the balls out of
+   line with each other. */
 .ball-slot {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   transition: transform 0.15s;
+}
+
+.ball-name {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: center;
+  /* Two lines at most; anything longer is ellipsised rather than pushing
+     the row taller. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .ball-slot:not(.empty):hover {

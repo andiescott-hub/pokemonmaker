@@ -19,17 +19,25 @@ export function HomeGallery() {
   return (
     <div className="home-gallery" data-testid="home-gallery">
       <div className="ball-grid">
-        {submitted.map((creature) => (
-          <button
-            key={creature.id}
-            className="ball-slot"
-            onClick={() => setOpen(creature)}
-            aria-label="Open creature"
-            data-testid="pokeball"
-          >
-            <PokeBall size={88} />
-          </button>
-        ))}
+        {submitted.map((creature) => {
+          // Older creatures (and any whose analysis came back empty) have no
+          // name — show something neutral rather than an empty gap.
+          const name = creature.creatureName || 'Creature'
+          return (
+            <button
+              key={creature.id}
+              className="ball-slot"
+              onClick={() => setOpen(creature)}
+              aria-label={`Open ${name}`}
+              data-testid="pokeball"
+            >
+              <PokeBall size={88} />
+              <span className="ball-name" data-testid="pokeball-name">
+                {name}
+              </span>
+            </button>
+          )
+        })}
         {Array.from({ length: emptySlots }).map((_, i) => (
           <div key={i} className="ball-slot empty">
             <PokeBall size={88} empty />
