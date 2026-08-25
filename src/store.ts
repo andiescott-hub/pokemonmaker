@@ -60,7 +60,14 @@ export interface AppState extends PersistedState {
   bumpRegenerate: () => void
   submitCreature: () => void
   startNewCreature: () => void
+
+  // Home
+  deleteCreature: (creatureId: string) => void
 }
+
+/** How many creatures the collection holds. Submitting is refused when
+ * full; deleting one frees the space immediately. */
+export const MAX_CREATURES = 50
 
 let idCounter = 0
 const nextId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${++idCounter}`
@@ -207,6 +214,7 @@ export const useAppStore = create<AppState>((set) => {
       update(({ draft, submitted }) => {
         if (draft.generationStatus !== 'generated' || !draft.generatedImage) return {}
         if (draft.powers.length !== REQUIRED_POWERS) return {}
+        if (submitted.length >= MAX_CREATURES) return {}
         const creature: SubmittedCreature = {
           id: nextId('creature'),
           image: draft.generatedImage,
@@ -222,6 +230,9 @@ export const useAppStore = create<AppState>((set) => {
       }),
 
     startNewCreature: () => update(() => ({ draft: emptyDraft() })),
+
+    deleteCreature: (creatureId) =>
+      update(({ submitted }) => ({ submitted: submitted.filter((c) => c.id !== creatureId) })),
   }
 })
 

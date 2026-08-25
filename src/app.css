@@ -647,8 +647,32 @@ button {
   overflow: hidden;
 }
 
-.ball-slot:not(.empty):hover {
+.ball-slot:hover {
   transform: scale(1.08);
+}
+
+.detail-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Muted until armed — deleting is deliberate, and the second tap turns it
+   red so it's obvious what's about to happen. */
+.delete-button {
+  font-size: 15px;
+  font-weight: 600;
+  padding: 11px 20px;
+  border-radius: var(--radius-pill);
+  color: var(--ink-soft);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--line);
+}
+
+.delete-button.confirming {
+  color: #fff;
+  background: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .gallery-caption {

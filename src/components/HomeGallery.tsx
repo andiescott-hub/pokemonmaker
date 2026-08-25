@@ -1,23 +1,45 @@
 import { useState } from 'react'
-import { useAppStore } from '../store'
+import { MAX_CREATURES, useAppStore } from '../store'
 import { POWERS } from '../data/powers'
 import { PokeBall } from './PokeBall'
 import type { SubmittedCreature } from '../types'
 
-const MIN_SLOTS = 8
-
 /**
- * Home tab: every submitted creature lands here as a Poké Ball, plus
- * dashed placeholder slots for creatures still to come. Tapping a ball
- * opens a simple detail view (the handoff left this screen undesigned).
+ * Home tab: every submitted creature lands here as a Poké Ball, under a
+ * counter of how much of the fifty-creature collection is filled. Tapping
+ * a ball opens a detail view, where it can also be deleted (the handoff
+ * left this screen undesigned).
  */
 export function HomeGallery() {
   const submitted = useAppStore((s) => s.submitted)
+  const deleteCreature = useAppStore((s) => s.deleteCreature)
   const [open, setOpen] = useState<SubmittedCreature | null>(null)
-  const emptySlots = Math.max(MIN_SLOTS - submitted.length, 2)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  const closeDetail = () => {
+    setOpen(null)
+    setConfirmDelete(false)
+  }
+
+  // Deleting takes two taps, like "Start over" on the canvas — losing a
+  // creature to one stray tap would be miserable.
+  const remove = (creature: SubmittedCreature) => {
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      window.setTimeout(() => setConfirmDelete(false), 3000)
+      return
+    }
+    deleteCreature(creature.id)
+    closeDetail()
+  }
 
   return (
     <div className="home-gallery" data-testid="home-gallery">
+      <p className="gallery-caption" data-testid="gallery-count">
+        {submitted.length === 0
+          ? `Your creatures land here as Poké Balls — room for ${MAX_CREATURES}.`
+          : `${submitted.length} of ${MAX_CREATURES} collected`}
+      </p>
       <div className="ball-grid">
         {submitted.map((creature) => {
           // Older creatures (and any whose analysis came back empty) have no
@@ -38,16 +60,10 @@ export function HomeGallery() {
             </button>
           )
         })}
-        {Array.from({ length: emptySlots }).map((_, i) => (
-          <div key={i} className="ball-slot empty">
-            <PokeBall size={88} empty />
-          </div>
-        ))}
       </div>
-      <p className="gallery-caption">Every submitted creature lands here as a Poké Ball.</p>
 
       {open && (
-        <div className="detail-overlay" onClick={() => setOpen(null)} data-testid="creature-detail">
+        <div className="detail-overlay" onClick={closeDetail} data-testid="creature-detail">
           <div className="detail-card" onClick={(e) => e.stopPropagation()}>
             <img src={open.image} alt={open.creatureName || 'Submitted creature'} />
             <div className="detail-meta">
@@ -66,9 +82,18 @@ export function HomeGallery() {
               </div>
               <span className="detail-date">Caught {new Date(open.submittedAt).toLocaleDateString()}</span>
             </div>
-            <button className="secondary-button" onClick={() => setOpen(null)}>
-              Close
-            </button>
+            <div className="detail-actions">
+              <button
+                className={`delete-button${confirmDelete ? ' confirming' : ''}`}
+                onClick={() => remove(open)}
+                data-testid="delete-creature"
+              >
+                {confirmDelete ? 'Really delete?' : '🗑️ Delete'}
+              </button>
+              <button className="secondary-button" onClick={closeDetail}>
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

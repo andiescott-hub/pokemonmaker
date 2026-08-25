@@ -1,4 +1,4 @@
-import { useAppStore } from '../store'
+import { MAX_CREATURES, useAppStore } from '../store'
 import { generateCreature } from '../services/generation'
 import { hasRealGenerator } from '../config'
 import { REQUIRED_POWERS } from '../types'
@@ -13,6 +13,7 @@ export function FinishScreen() {
   const draft = useAppStore((s) => s.draft)
   const { setGeneration, bumpRegenerate, submitCreature, setTab, setMode } = useAppStore.getState()
 
+  const collectionFull = useAppStore((s) => s.submitted.length) >= MAX_CREATURES
   const hasSketch = draft.strokes.some((s) => !s.removed)
   const powersReady = draft.powers.length === REQUIRED_POWERS
   const ready = hasSketch && powersReady
@@ -104,9 +105,18 @@ export function FinishScreen() {
             <button className="secondary-button" onClick={() => generate(true)} data-testid="regenerate-button">
               Regenerate
             </button>
-            <button className="primary-button" onClick={submit} data-testid="submit-button">
-              Submit ➜ 🔴
-            </button>
+            {collectionFull ? (
+              /* Refusing silently would leave a child tapping a dead
+                 button with no idea why. */
+              <p className="finish-note" data-testid="collection-full">
+                Your Poké Balls are all full ({MAX_CREATURES} of {MAX_CREATURES})! Delete one from
+                Home to make room.
+              </p>
+            ) : (
+              <button className="primary-button" onClick={submit} data-testid="submit-button">
+                Submit ➜ 🔴
+              </button>
+            )}
           </div>
         </div>
       )}

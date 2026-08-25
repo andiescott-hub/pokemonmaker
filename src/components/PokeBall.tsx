@@ -1,12 +1,5 @@
 /** The classic Poké Ball glyph: red top, white bottom, black band, center button. */
-export function PokeBall({ size = 64, empty = false }: { size?: number; empty?: boolean }) {
-  if (empty) {
-    return (
-      <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
-        <circle cx="50" cy="50" r="45" fill="none" stroke="#c9c3b8" strokeWidth="4" strokeDasharray="10 8" />
-      </svg>
-    )
-  }
+export function PokeBall({ size = 64 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
       <circle cx="50" cy="50" r="46" fill="#ffffff" stroke="#1f1d1a" strokeWidth="6" />

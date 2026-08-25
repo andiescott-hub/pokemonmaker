@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { loadPersisted, useAppStore } from '../src/store'
+import { MAX_CREATURES, loadPersisted, useAppStore } from '../src/store'
 import { REQUIRED_POWERS, emptyDraft } from '../src/types'
 
 beforeEach(() => {
@@ -117,6 +117,62 @@ describe('submit', () => {
     expect(state().draft.generationStatus).toBe('idle')
   })
 })
+
+describe('deleting and collection capacity', () => {
+  const creature = (id: string) => ({
+    id,
+    image: 'data:x',
+    powers: ['water', 'fire', 'venom'] as const,
+    submittedAt: 1,
+    description: '',
+    creatureName: id,
+    aiGenerated: true,
+  })
+
+  it('deletes the right creature and leaves the rest', () => {
+    useAppStore.setState({ submitted: ['a', 'b', 'c'].map(creature) as never })
+    state().deleteCreature('b')
+    expect(state().submitted.map((c) => c.id)).toEqual(['a', 'c'])
+  })
+
+  it('ignores a delete for an id that is not there', () => {
+    useAppStore.setState({ submitted: [creature('a')] as never })
+    state().deleteCreature('nope')
+    expect(state().submitted).toHaveLength(1)
+  })
+
+  it('refuses to submit when the collection is full', () => {
+    const full = Array.from({ length: MAX_CREATURES }, (_, i) => creature(`c${i}`))
+    useAppStore.setState({ submitted: full as never })
+    makeReadyToSubmit()
+    state().submitCreature()
+    expect(state().submitted).toHaveLength(MAX_CREATURES)
+  })
+
+  it('accepts a submit again once a creature is deleted', () => {
+    const full = Array.from({ length: MAX_CREATURES }, (_, i) => creature(`c${i}`))
+    useAppStore.setState({ submitted: full as never })
+    state().deleteCreature('c0')
+    makeReadyToSubmit()
+    state().submitCreature()
+    expect(state().submitted).toHaveLength(MAX_CREATURES)
+    expect(state().submitted.map((c) => c.id)).not.toContain('c0')
+  })
+})
+
+/** Bring the draft to the point where submitting is otherwise allowed. */
+function makeReadyToSubmit() {
+  state().addStroke([{ x: 1, y: 1 }])
+  state().togglePower('water')
+  state().togglePower('fire')
+  state().togglePower('venom')
+  state().setGeneration('generated', {
+    image: 'data:image/png;base64,xxx',
+    description: 'd',
+    creatureName: 'n',
+    aiGenerated: true,
+  })
+}
 
 describe('persistence', () => {
   it('round-trips draft and collection through storage JSON', () => {
